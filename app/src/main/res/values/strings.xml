@@ -74,7 +74,9 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
 
-    <string name="mi_choose_device">链接到蓝牙设备...</string>
+    <string name="mi_choose_device">链接到蓝牙设备…</string>
 
-    <string name="title_processing">正在处理，请稍候...</string>
+    <string name="title_processing">正在处理，请稍候…</string>
+
+    <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
 </resources>

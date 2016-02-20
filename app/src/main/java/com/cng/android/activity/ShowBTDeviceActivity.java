@@ -2,12 +2,8 @@ package com.cng.android.activity;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -19,31 +15,29 @@ import android.widget.ListView;
 import com.cng.android.CNG;
 import com.cng.android.adapter.BluetoothDeviceListAdapter;
 import com.cng.android.db.DBService;
+import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.HandlerDelegate;
+import com.cng.android.util.IBluetoothListener;
 import com.cng.android.util.IMessageHandler;
 import com.cng.android.R;
 
-import java.util.HashSet;
-import java.util.Set;
+import static com.cng.android.CNG.D;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class ShowBTDeviceActivity extends Activity implements Runnable, IMessageHandler, ListView.OnItemClickListener {
+public class ShowBTDeviceActivity extends Activity implements Runnable, IMessageHandler, ListView.OnItemClickListener, IBluetoothListener {
     private static final String TAG = ShowBTDeviceActivity.class.getSimpleName ();
-    private static final boolean D = true;
 
     private static final int SAVE_MAC = 0;
 
-    private BluetoothReceiver receiver;
-    private BluetoothAdapter ba;
     private Handler handler;
     private BluetoothDeviceListAdapter adapter;
     private Message localMessage = new Message ();
     private ProgressDialog dialog;
-
-    private Set<String> keys = new HashSet<> ();
+    private BluetoothDiscover discover;
+    private int runningMode = CNG.RUNNING_MODE_NORMAL;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -64,26 +58,22 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     protected void onResume () {
         super.onResume ();
 
-        IntentFilter filter = new IntentFilter (BluetoothDevice.ACTION_FOUND);
-        receiver = new BluetoothReceiver ();
-        registerReceiver (receiver, filter);
-
-        ba = BluetoothAdapter.getDefaultAdapter ();
-        if (!ba.isEnabled ()) {
-            Log.d (TAG, "blue tooth is not enable, enable it.");
-            ba.enable ();
-            Log.d (TAG, "blue tooth is enabled.");
-        }
-        ba.startDiscovery ();
+        discover = new BluetoothDiscover (this, this);
+        discover.discovery ();
     }
 
     @Override
     protected void onPause () {
+        discover.cancel ();
         super.onPause ();
-        unregisterReceiver (receiver);
-        if (ba != null) {
-            ba.cancelDiscovery ();
+    }
+
+    @Override
+    public void onBackPressed () {
+        if (runningMode == CNG.RUNNING_MODE_REQUESTED) {
+            setResult (CNG.RESULT_CODE_CANCEL);
         }
+        super.onBackPressed ();
     }
 
     @Override
@@ -111,37 +101,30 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
 
     @Override
     public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
-        ba.cancelDiscovery ();
+        discover.cancel ();
         BluetoothDevice device = adapter.getItem (position);
         Bundle bundle = new Bundle (1);
-        bundle.putString ("mac", device.getAddress ());
-        localMessage.what = SAVE_MAC;
-        localMessage.setData (bundle);
-        CNG.runInNonUIThread (this);
+        switch (runningMode) {
+            case CNG.RUNNING_MODE_NORMAL :
+                bundle.putString ("mac", device.getAddress ());
+                localMessage.what = SAVE_MAC;
+                localMessage.setData (bundle);
+                CNG.runInNonUIThread (this);
+                break;
+            case CNG.RUNNING_MODE_REQUESTED :
+                Intent intent = new Intent ();
+                bundle.putParcelable ("device", device);
+                intent.putExtras (bundle);
+                setResult (CNG.RESULT_CODE_OK, intent);
+                finish ();
+                break;
+        }
     }
 
-    private class BluetoothReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive (Context context, Intent intent) {
-            String action = intent.getAction ();
-            if (BluetoothDevice.ACTION_FOUND.equals (action)) {
-                BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
-                String mac = device.getAddress ();
-                if (D) {
-                    Log.d (TAG, "receive a device: " + device + ", mac = " + mac);
-                }
-                if (!keys.contains (mac)) {
-                    keys.add (mac);
-                    adapter.addItem (device);
-                    if (D)
-                        Log.d (TAG, "device " + device + " not in list, add it.");
-                } else if (D) {
-                    Log.d (TAG, "device " + device + " is already in list, ignore it.");
-                }
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals (action)) {
-                if (D)
-                    Log.d (TAG, "finish discovery");
-            }
-        }
+    @Override
+    public void onDeviceFound (BluetoothDevice device) {
+        if (D)
+            Log.d (TAG, "a bluetooth device found. mac - " + device.getAddress ());
+        adapter.addItem (device);
     }
 }

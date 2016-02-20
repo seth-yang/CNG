@@ -14,6 +14,12 @@ public class CNG extends Application {
     private static final ExecutorService service = Executors.newCachedThreadPool ();
     private static CNG instance;
 
+    public static final boolean D = true;
+    public static final int RESULT_CODE_OK         = 0;
+    public static final int RESULT_CODE_CANCEL     = 1;
+    public static final int RUNNING_MODE_NORMAL    = 0;
+    public static final int RUNNING_MODE_REQUESTED = 1;
+
     public static void runInNonUIThread (Runnable runnable) {
         service.execute (runnable);
     }
