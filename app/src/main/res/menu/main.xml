@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_choose_device"
+          android:title="@string/mi_choose_device"
+          android:icon="@android:drawable/stat_sys_data_bluetooth"/>
+</menu>
