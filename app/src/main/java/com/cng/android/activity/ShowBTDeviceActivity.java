@@ -2,7 +2,6 @@ package com.cng.android.activity;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -48,19 +47,21 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
         listView.setOnItemClickListener (this);
 
         handler = new HandlerDelegate (this);
+        discover = new BluetoothDiscover (this, this);
     }
 
     @Override
     protected void onResume () {
         super.onResume ();
 
-        discover = new BluetoothDiscover (this, this);
-        discover.discovery ();
+        if (!discover.isDiscovering ())
+            discover.discovery ();
     }
 
     @Override
     protected void onPause () {
-        discover.cancel ();
+        if (discover.isDiscovering ())
+            discover.cancel ();
         super.onPause ();
     }
 
@@ -79,10 +80,7 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
                 if (device != null) {
                     String mac = device.getAddress ();
                     DBService.saveOrUpdateBTMac (mac);
-                    Message message = new Message ();
-                    message.what = RETURN;
-                    message.setData (bundle);
-                    handler.sendMessage (message);
+                    handler.sendEmptyMessage (RETURN);
                 }
                 break;
         }
@@ -93,10 +91,6 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     public void handleMessage (Message message) {
         switch (message.what) {
             case RETURN :
-                Bundle bundle = message.getData ();
-                Intent intent = new Intent ();
-                intent.putExtras (bundle);
-                setResult (CNG.RESULT_CODE_OK, intent);
                 finish ();
                 break;
         }

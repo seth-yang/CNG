@@ -1,6 +1,7 @@
 package com.cng.android;
 
 import android.app.Application;
+import android.util.Log;
 
 import com.cng.android.db.DBService;
 
@@ -21,6 +22,10 @@ public class CNG extends Application {
     public static final int RUNNING_MODE_REQUESTED = 1;
 
     public static final String ACTION_MATCH_BT_DEVICE = "action.match.bluetooth.device";
+    public static final String ACTION_START_CONNECT   = "action.start.connect";
+    public static final String ACTION_NOT_BIND        = "do-not-bind-service";
+
+    private static final String TAG = "CNG";
 
     public static void runInNonUIThread (Runnable runnable) {
         service.execute (runnable);
@@ -31,6 +36,8 @@ public class CNG extends Application {
     @Override
     public void onCreate () {
         super.onCreate ();
+        if (D)
+            Log.d (TAG, "CNG Application create.");
         instance = this;
         runInNonUIThread (new Runnable () {
             @Override

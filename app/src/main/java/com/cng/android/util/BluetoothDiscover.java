@@ -17,6 +17,7 @@ public class BluetoothDiscover {
     private IBluetoothListener listener;
     private BluetoothAdapter adapter;
     private BluetoothReceiver receiver;
+    private boolean discovering = false;
 
     private static final String TAG = BluetoothDiscover.class.getSimpleName ();
 
@@ -34,6 +35,7 @@ public class BluetoothDiscover {
             adapter.enable ();
 
         adapter.startDiscovery ();
+        discovering = true;
     }
 
     public void cancel () {
@@ -54,5 +56,10 @@ public class BluetoothDiscover {
             if (CNG.D)
                 Log.d (TAG, "BT adapter released.");
         }
+        discovering = false;
+    }
+
+    public boolean isDiscovering () {
+        return discovering;
     }
 }

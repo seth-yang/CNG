@@ -1,24 +1,50 @@
 package com.cng.android.db;
 
-import android.app.Application;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
+import static com.cng.android.CNG.D;
 /**
  * Created by game on 2016/2/20
  */
 public class DBService {
     private static SQLiteDatabase db;
 
-    private static final String SAVED_BT_MAC = "saved_bt_mac";
+    private static final String SAVED_BT_MAC = "saved.bt.mac";
+    private static final String QUEUE_CAPACITY = "queue.capacity";
+    private static final String TAG = "DBService";
 
 /*
     private static final int GET_SAVED_BT_MAC = 1,
                              SAVE_OR_UPDATE_BT_MAC = 2;
 */
 
-    public static void init (Application application) {
-        db = new DBHelper (application).getWritableDatabase ();
+    public static void init (Context context) {
+        if (D)
+            Log.d (TAG, "trying init database with " + context);
+
+        if (db == null) {
+            if (D)
+                Log.d (TAG, "The database is not config, init it");
+
+            db = new DBHelper (context).getWritableDatabase ();
+            if (D)
+                Log.d (TAG, "database create as: " + db);
+
+            if (D)
+                Log.d (TAG, "trying to fetch queue capacity ");
+            if (getQueueCapacity () < 0) {
+                if (D)
+                    Log.d (TAG, "queue capacity is not set, set it to 3600");
+                insert (QUEUE_CAPACITY, String.valueOf (3600));
+                if (D)
+                    Log.d (TAG, "capacity set!");
+            }
+        } else if (D) {
+            Log.d (TAG, "the database has config, nothing to do.");
+        }
     }
 
     public static void dispose () {
@@ -49,17 +75,44 @@ public class DBService {
     public static void saveOrUpdateBTMac (String mac) {
         String saved = getSavedBTMac ();
         if (saved == null) {
-            String sql =
-                    "INSERT INTO " + DBHelper.TABLE_CONF +
-                    " (" + DBHelper.F_NAME + " , " + DBHelper.F_VALUE + ") " +
-                    "VALUES (?, ?)";
-            db.execSQL (sql, new String[]{SAVED_BT_MAC, mac});
+            insert (SAVED_BT_MAC, mac);
         } else {
-            String sql = "UPDATE " + DBHelper.TABLE_CONF +
-                         "   SET " + DBHelper.F_VALUE + " = ? " +
-                         " WHERE " + DBHelper.F_NAME + " = ?";
-            db.execSQL (sql, new String[] {mac, SAVED_BT_MAC});
+            update (mac, SAVED_BT_MAC);
         }
+    }
+
+    public static int getQueueCapacity () {
+        Cursor cursor = query (DBHelper.TABLE_CONF, QUEUE_CAPACITY);
+        if (cursor.moveToNext ()) {
+            return cursor.getInt (0);
+        }
+
+        return -1;
+    }
+
+    private static Cursor query (String table, String name) {
+        return db.query (
+                table,
+                new String[] {DBHelper.F_VALUE},
+                DBHelper.F_NAME + "= ?",
+                new String[] {name},
+                null, null, null
+        );
+    }
+
+    private static void insert (String name, String value) {
+        String sql =
+                "INSERT INTO " + DBHelper.TABLE_CONF +
+                " (" + DBHelper.F_NAME + " , " + DBHelper.F_VALUE + ") " +
+                "VALUES (?, ?)";
+        db.execSQL (sql, new String[] {name, value});
+    }
+
+    private static void update (String name, String value) {
+        String sql = "UPDATE " + DBHelper.TABLE_CONF +
+                "   SET " + DBHelper.F_VALUE + " = ? " +
+                " WHERE " + DBHelper.F_NAME + " = ?";
+        db.execSQL (sql, new String[] {value, name});
     }
 
 /*
