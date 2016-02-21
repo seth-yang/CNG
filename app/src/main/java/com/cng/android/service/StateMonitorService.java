@@ -8,21 +8,21 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Handler;
+//import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
+//import android.os.Message;
 import android.util.Log;
 
-import com.cng.android.CNG;
+//import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.MainActivity;
 import com.cng.android.data.Node;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.FixedSizeQueue;
-import com.cng.android.util.HandlerDelegate;
+//import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IBluetoothListener;
-import com.cng.android.util.IMessageHandler;
+//import com.cng.android.util.IMessageHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,18 +34,19 @@ import java.util.UUID;
 
 import static com.cng.android.CNG.D;
 
-public class StateMonitorService extends IntentService implements IBluetoothListener, IMessageHandler {
+public class StateMonitorService extends IntentService implements IBluetoothListener/*, IMessageHandler*/ {
     public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
 
     private static final String TAG = StateMonitorService.class.getSimpleName ();
     private static final int STATE_START_MAIN_ACTIVITY = 0;
 
     private IBinder binder;
-    private Handler handler;
+//    private Handler handler;
     private BluetoothDevice device;
     private BluetoothDiscover discover;
     private BluetoothSocket socket;
     private boolean connected;
+    private String savedMac;
 
     private static int COUNT = 0;
 
@@ -65,7 +66,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         Log.d (TAG, this.toString ());
 
         binder = new MonitorServiceBinder (this);
-        handler = new HandlerDelegate (this);
+//        handler = new HandlerDelegate (this);
         discover = new BluetoothDiscover (this, this);
 
         Intent target = new Intent (this, MainActivity.class);
@@ -91,24 +92,26 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     }
 
     @Override
+    public boolean onUnbind (Intent intent) {
+        return super.onUnbind (intent);
+    }
+
+    @Override
+    public void onRebind (Intent intent) {
+        super.onRebind (intent);
+    }
+
+    @Override
     protected void onHandleIntent (Intent intent) {
         if (D) {
             Log.d (TAG, "handle intent");
         }
 
         if (queue == null) {
-            if (D) {
-                Log.d (TAG, "trying to init database.");
-                Log.d (TAG, "trying to init fixed queue.");
-            }
-            DBService.init (this);
-
-            int capacity = DBService.getQueueCapacity ();
-            queue = new FixedSizeQueue<> (capacity);
-            if (D)
-                Log.d (TAG, "queue init as FixedQueue<" + capacity + ">");
+            initFixedQueue ();
         }
 
+/*
         if (D)
             Log.d (TAG, "finding bluetooth device...");
         if (device == null) {
@@ -123,12 +126,14 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 }
             }
         }
+*/
 
-        if (device == null) { // 首次进入服务
+//        if (device == null) { // 首次进入服务
             if (D)
                 Log.d (TAG, "first time in the service, discovery it");
 
-            String savedMac = DBService.getSavedBTMac ();
+            savedMac = DBService.getSavedBTMac ();
+/*
             if (savedMac == null) {
                 if (D)
                     Log.d (TAG, "the device's mac is not saved. active the main activity to config it.");
@@ -136,49 +141,29 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 handler.sendEmptyMessage (STATE_START_MAIN_ACTIVITY);
                 return;
             } else {
-                if (D)
-                    Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
+*/
+            if (D)
+                Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
 
-                discover.discovery ();
-                synchronized (SPP_UUID) {
-                    try {
-                        if (D)
-                            Log.d (TAG, "Waiting for connect to bluetooth device ...");
-                        SPP_UUID.wait ();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace ();
-                    }
+            discover.discovery ();
+            synchronized (SPP_UUID) {
+                try {
+                    if (D)
+                        Log.d (TAG, "Waiting for connect to bluetooth device ...");
+                    SPP_UUID.wait ();
+                } catch (InterruptedException e) {
+                    e.printStackTrace ();
                 }
             }
-        }
+//            }
+//        }
 
-        if (D)
-            Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
-        try {
-            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
-            socket.connect ();
-            synchronized (this) {
-                connected = true;
-            }
-            InputStream in = socket.getInputStream ();
-            BufferedReader reader = new BufferedReader (new InputStreamReader (in));
-            while (socket.isConnected ()) {
-                String line = reader.readLine ();
-                Log.d (TAG, line);
-            }
-        } catch (IOException ex) {
-            Log.w (TAG, ex.getMessage (), ex);
-        } finally {
-            if (socket != null) try {
-                socket.close ();
-            } catch (IOException ex) {
-                Log.w (TAG, ex.getMessage (), ex);
-            }
-        }
+        connect ();
     }
 
     @Override
     public void onDestroy () {
+        super.onDestroy ();
         Intent intent = new Intent (this, getClass ());
         startService (intent);
     }
@@ -190,15 +175,12 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         if (D)
             Log.d (TAG, "find BT device = " + device);
         Log.d (TAG, "Current Thread = " + Thread.currentThread ().getName ());
-        synchronized (SPP_UUID) {
+        if (device.getAddress ().equals (savedMac)) synchronized (SPP_UUID) {
             SPP_UUID.notifyAll ();
         }
-/*
-        Intent intent = new Intent (this, this.getClass ());
-        startService (intent);
-*/
     }
 
+/*
     @Override
     public void handleMessage (Message message) {
         switch (message.what) {
@@ -210,6 +192,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 break;
         }
     }
+*/
 
     Queue<Node> copyData () {
         synchronized (this) {
@@ -219,5 +202,74 @@ public class StateMonitorService extends IntentService implements IBluetoothList
 
     synchronized boolean isConnected () {
         return connected;
+    }
+
+    private boolean connectToDevice () throws IOException {
+        int retry = 3;
+        while (retry > 0) {
+            if (D)
+                Log.d (TAG, "Trying to connect to BT device ...");
+            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
+            try {
+                socket.connect ();
+                if (D)
+                    Log.d (TAG, "The BT Device Connected!!!");
+                return true;
+            } catch (IOException ex) {
+                retry --;
+                if (D)
+                    Log.d (TAG, "Fail to connect to BT device, try again");
+                if (socket != null) try {
+                    socket.close ();
+                } catch (IOException ioe) {
+                    Log.w (TAG, ioe.getMessage (), ioe);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void connect () {
+        if (D)
+            Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
+        try {
+            if (connectToDevice ()) {
+                synchronized (this) {
+                    connected = true;
+                }
+
+                InputStream in = socket.getInputStream ();
+                BufferedReader reader = new BufferedReader (new InputStreamReader (in));
+                while (socket.isConnected ()) {
+                    String line = reader.readLine ();
+                    Log.d (TAG, line);
+                }
+            }
+        } catch (IOException ex) {
+            Log.w (TAG, ex.getMessage (), ex);
+        } finally {
+            synchronized (this) {
+                connected = false;
+            }
+            if (socket != null) try {
+                socket.close ();
+            } catch (IOException ex) {
+                Log.w (TAG, ex.getMessage (), ex);
+            }
+        }
+    }
+
+    private void initFixedQueue () {
+        if (D) {
+            Log.d (TAG, "trying to init database.");
+            Log.d (TAG, "trying to init fixed queue.");
+        }
+        DBService.init (this);
+
+        int capacity = DBService.getQueueCapacity ();
+        queue = new FixedSizeQueue<> (capacity);
+        if (D)
+            Log.d (TAG, "queue init as FixedQueue<" + capacity + ">");
     }
 }

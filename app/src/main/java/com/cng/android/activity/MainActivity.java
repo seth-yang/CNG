@@ -50,19 +50,22 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
         @Override
         public void onServiceConnected (ComponentName name, IBinder service) {
             binder = (MonitorServiceBinder) service;
-            if (CNG.D)
-                Log.d (TAG, "service bound.");
+            if (CNG.D) {
+                Log.d (TAG, "ServiceConnection.onServiceConnected::name = " + name);
+                Log.d (TAG, "The binder is: " + binder);
+            }
         }
 
         @Override
         public void onServiceDisconnected (ComponentName name) {
             binder = null;
+            if (D)
+                Log.d (TAG, "Service disconnected. name = " + name);
         }
     };
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
-        Log.d (TAG, "++++++++++++ Main Activity Create ++++++++++++");
         super.onCreate (savedInstanceState);
         setContentView (R.layout.activity_main);
 
@@ -88,13 +91,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
         Log.d (TAG, "++++++++++++ Main Activity onResume ++++++++++++");
         dialog.show ();
 
-/*
-        if (!running) {
-            if (D)
-                Log.d (TAG, "Local Thread is not running, start it");
-*/
-            CNG.runInNonUIThread (this);
-//        }
+        CNG.runInNonUIThread (this);
     }
 
     @Override
@@ -108,7 +105,6 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
     @Override
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState (outState);
-        Log.d (TAG, "++++++ Main Activity save instance state ++++++");
         if (serviceStarted) {
             if (D)
                 Log.d (TAG, "The service is started. save it");
@@ -161,13 +157,20 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 Log.d (TAG, "trying to bind the service ");
             if (binder == null) {
                 if (bindService (service, conn, BIND_AUTO_CREATE)) {
-                    if (D)
+                    if (D) {
                         Log.d (TAG, "The service bound.");
+                        Log.d (TAG, "Now, The binder is: " + binder);
+                    }
+                } else if (D) {
+                    Log.w (TAG, "Can't bind to the service!!!");
                 }
             }
 
             Log.d (TAG, "++++++++++++ waiting for connect to BT device ++++++++++++");
+            Log.d (TAG, "Binder = " + binder);
+            running = true;
             while (running) {
+//                Log.d (TAG, "binder = " + binder + ", connected = " + (binder != null && binder.isConnected ()));
                 if (binder != null && binder.isConnected ()) {
                     if (CNG.D)
                         Log.d (TAG, "The bluetooth device is connected.");
@@ -182,6 +185,9 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                     Log.w (TAG, ex.getMessage (), ex);
                 }
             }
+
+            if (D)
+                Log.d (TAG, "The Local Thread stopped.");
         }
     }
 
