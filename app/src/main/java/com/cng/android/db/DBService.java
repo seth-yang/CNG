@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class DBService {
     private static SQLiteDatabase db;
 
-    private static final String SAVED_BT_MAC = "'saved_bt_mac'";
+    private static final String SAVED_BT_MAC = "saved_bt_mac";
 
 /*
     private static final int GET_SAVED_BT_MAC = 1,
@@ -30,12 +30,15 @@ public class DBService {
     public static String getSavedBTMac () {
         Cursor cursor = null;
         try {
-            String sql = "SELECT value FROM conf WHERE name = " + SAVED_BT_MAC;
+            String sql =
+                    "SELECT " + DBHelper.F_VALUE +
+                    "  FROM " + DBHelper.TABLE_CONF +
+                    " WHERE " + DBHelper.F_NAME + " = '" + SAVED_BT_MAC + "'";
             cursor = db.rawQuery (sql, null);
 
             String mac = null;
             if (cursor.moveToNext ()) {
-                mac = cursor.getString (1);
+                mac = cursor.getString (0);
             }
             return mac;
         } finally {
@@ -46,11 +49,16 @@ public class DBService {
     public static void saveOrUpdateBTMac (String mac) {
         String saved = getSavedBTMac ();
         if (saved == null) {
-            String sql = "INSERT INTO conf (name, value) VALUES (?, ?)";
+            String sql =
+                    "INSERT INTO " + DBHelper.TABLE_CONF +
+                    " (" + DBHelper.F_NAME + " , " + DBHelper.F_VALUE + ") " +
+                    "VALUES (?, ?)";
             db.execSQL (sql, new String[]{SAVED_BT_MAC, mac});
         } else {
-            String sql = "UPDATE conf SET value = ? WHERE name = " + SAVED_BT_MAC;
-            db.execSQL (sql, new String[] {mac});
+            String sql = "UPDATE " + DBHelper.TABLE_CONF +
+                         "   SET " + DBHelper.F_VALUE + " = ? " +
+                         " WHERE " + DBHelper.F_NAME + " = ?";
+            db.execSQL (sql, new String[] {mac, SAVED_BT_MAC});
         }
     }
 

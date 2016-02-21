@@ -1,7 +1,6 @@
 package com.cng.android.activity;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
@@ -30,14 +29,13 @@ import static com.cng.android.CNG.D;
 public class ShowBTDeviceActivity extends Activity implements Runnable, IMessageHandler, ListView.OnItemClickListener, IBluetoothListener {
     private static final String TAG = ShowBTDeviceActivity.class.getSimpleName ();
 
-    private static final int SAVE_MAC = 0;
+    private static final int LOCAL_STATE_SAVE_MAC = 0;
+    private static final int RETURN   = 1;
 
     private Handler handler;
     private BluetoothDeviceListAdapter adapter;
     private Message localMessage = new Message ();
-    private ProgressDialog dialog;
     private BluetoothDiscover discover;
-    private int runningMode = CNG.RUNNING_MODE_NORMAL;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -50,8 +48,6 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
         listView.setOnItemClickListener (this);
 
         handler = new HandlerDelegate (this);
-        dialog = new ProgressDialog (this);
-        dialog.setTitle (R.string.title_processing);
     }
 
     @Override
@@ -70,9 +66,7 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
 
     @Override
     public void onBackPressed () {
-        if (runningMode == CNG.RUNNING_MODE_REQUESTED) {
-            setResult (CNG.RESULT_CODE_CANCEL);
-        }
+        setResult (CNG.RESULT_CODE_CANCEL);
         super.onBackPressed ();
     }
 
@@ -80,10 +74,16 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     public void run () {
         Bundle bundle = localMessage.getData ();
         switch (localMessage.what) {
-            case SAVE_MAC :
-                String mac = bundle.getString ("mac");
-                DBService.saveOrUpdateBTMac (mac);
-                handler.sendEmptyMessage (SAVE_MAC);
+            case LOCAL_STATE_SAVE_MAC:
+                BluetoothDevice device = bundle.getParcelable ("device");
+                if (device != null) {
+                    String mac = device.getAddress ();
+                    DBService.saveOrUpdateBTMac (mac);
+                    Message message = new Message ();
+                    message.what = RETURN;
+                    message.setData (bundle);
+                    handler.sendMessage (message);
+                }
                 break;
         }
         localMessage.setData (null);
@@ -92,8 +92,11 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     @Override
     public void handleMessage (Message message) {
         switch (message.what) {
-            case SAVE_MAC :
-                dialog.dismiss ();
+            case RETURN :
+                Bundle bundle = message.getData ();
+                Intent intent = new Intent ();
+                intent.putExtras (bundle);
+                setResult (CNG.RESULT_CODE_OK, intent);
                 finish ();
                 break;
         }
@@ -104,27 +107,16 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
         discover.cancel ();
         BluetoothDevice device = adapter.getItem (position);
         Bundle bundle = new Bundle (1);
-        switch (runningMode) {
-            case CNG.RUNNING_MODE_NORMAL :
-                bundle.putString ("mac", device.getAddress ());
-                localMessage.what = SAVE_MAC;
-                localMessage.setData (bundle);
-                CNG.runInNonUIThread (this);
-                break;
-            case CNG.RUNNING_MODE_REQUESTED :
-                Intent intent = new Intent ();
-                bundle.putParcelable ("device", device);
-                intent.putExtras (bundle);
-                setResult (CNG.RESULT_CODE_OK, intent);
-                finish ();
-                break;
-        }
+        bundle.putParcelable ("device", device);
+        localMessage.what = LOCAL_STATE_SAVE_MAC;
+        localMessage.setData (bundle);
+        CNG.runInNonUIThread (this);
     }
 
     @Override
     public void onDeviceFound (BluetoothDevice device) {
         if (D)
-            Log.d (TAG, "a bluetooth device found. mac - " + device.getAddress ());
+            Log.d (TAG, "a bluetooth device found. mac = " + device.getAddress ());
         adapter.addItem (device);
     }
 }

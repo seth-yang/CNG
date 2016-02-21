@@ -20,6 +20,8 @@ public class CNG extends Application {
     public static final int RUNNING_MODE_NORMAL    = 0;
     public static final int RUNNING_MODE_REQUESTED = 1;
 
+    public static final String ACTION_MATCH_BT_DEVICE = "action.match.bluetooth.device";
+
     public static void runInNonUIThread (Runnable runnable) {
         service.execute (runnable);
     }

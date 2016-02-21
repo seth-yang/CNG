@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.util.Log;
 
+import com.cng.android.CNG;
 import com.cng.android.receiver.BluetoothReceiver;
 
 /**
@@ -15,6 +17,8 @@ public class BluetoothDiscover {
     private IBluetoothListener listener;
     private BluetoothAdapter adapter;
     private BluetoothReceiver receiver;
+
+    private static final String TAG = BluetoothDiscover.class.getSimpleName ();
 
     public BluetoothDiscover (Context context, IBluetoothListener listener) {
         this.context = context;
@@ -33,10 +37,22 @@ public class BluetoothDiscover {
     }
 
     public void cancel () {
-        if (receiver != null)
+        if (receiver != null) {
+            if (CNG.D)
+                Log.d (TAG, "unregister receiver...");
             context.unregisterReceiver (receiver);
+            receiver = null;
+            if (CNG.D)
+                Log.d (TAG, "receiver released.");
+        }
 
-        if (adapter != null)
+        if (adapter != null) {
+            if (CNG.D)
+                Log.d (TAG, "canceling discovering");
             adapter.cancelDiscovery ();
+            adapter = null;
+            if (CNG.D)
+                Log.d (TAG, "BT adapter released.");
+        }
     }
 }
