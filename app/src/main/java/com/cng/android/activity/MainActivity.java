@@ -20,6 +20,7 @@ import com.cng.android.R;
 import com.cng.android.db.DBService;
 import com.cng.android.service.MonitorServiceBinder;
 import com.cng.android.service.StateMonitorService;
+import com.cng.android.ui.ChartView;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;
 
@@ -203,6 +204,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 break;
             case DEVICE_CONNECTED :
                 dialog.dismiss ();
+                ((ChartView) findViewById (R.id.chart)).setProvider (binder);
                 break;
             case START_SERVICE :
                 Intent intent = new Intent (this, StateMonitorService.class);

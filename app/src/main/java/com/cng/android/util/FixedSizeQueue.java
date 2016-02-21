@@ -1,12 +1,13 @@
 package com.cng.android.util;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by game on 2016/2/21
  */
-public class FixedSizeQueue<E> extends ConcurrentLinkedQueue<E> {
+public class FixedSizeQueue<E> extends LinkedList<E> {
     private int capacity = 16;
 
     public FixedSizeQueue () {

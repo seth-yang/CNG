@@ -8,21 +8,20 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Build;
-//import android.os.Handler;
 import android.os.IBinder;
-//import android.os.Message;
 import android.util.Log;
 
-//import com.cng.android.CNG;
+import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.MainActivity;
-import com.cng.android.data.Node;
+import com.cng.android.concurrent.BluetoothWriter;
+import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.FixedSizeQueue;
-//import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IBluetoothListener;
-//import com.cng.android.util.IMessageHandler;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,14 +33,13 @@ import java.util.UUID;
 
 import static com.cng.android.CNG.D;
 
-public class StateMonitorService extends IntentService implements IBluetoothListener/*, IMessageHandler*/ {
+public class StateMonitorService extends IntentService implements IBluetoothListener {
     public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
 
     private static final String TAG = StateMonitorService.class.getSimpleName ();
     private static final int STATE_START_MAIN_ACTIVITY = 0;
 
     private IBinder binder;
-//    private Handler handler;
     private BluetoothDevice device;
     private BluetoothDiscover discover;
     private BluetoothSocket socket;
@@ -50,8 +48,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
 
     private static int COUNT = 0;
 
-    private FixedSizeQueue<Node> queue;
-//    private NotificationManager manager;
+    private FixedSizeQueue<Transformer> queue;
 
     public StateMonitorService () {
         super ("StateMonitorService");
@@ -66,7 +63,6 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         Log.d (TAG, this.toString ());
 
         binder = new MonitorServiceBinder (this);
-//        handler = new HandlerDelegate (this);
         discover = new BluetoothDiscover (this, this);
 
         Intent target = new Intent (this, MainActivity.class);
@@ -81,24 +77,8 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
-        Log.d (TAG, "++++++++++++ Monitor Service on start command ++++++++++++");
-        return super.onStartCommand (intent, START_STICKY, startId);
-    }
-
-    @Override
     public IBinder onBind (Intent intent) {
         return binder;
-    }
-
-    @Override
-    public boolean onUnbind (Intent intent) {
-        return super.onUnbind (intent);
-    }
-
-    @Override
-    public void onRebind (Intent intent) {
-        super.onRebind (intent);
     }
 
     @Override
@@ -111,52 +91,23 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             initFixedQueue ();
         }
 
-/*
         if (D)
-            Log.d (TAG, "finding bluetooth device...");
-        if (device == null) {
-            if (D)
-                Log.d (TAG, "bluetooth is null, try to find it in the intent.");
-            device = intent.getParcelableExtra ("device");
-            if (D) {
-                if (device == null) {
-                    Log.d (TAG, "there is no device in the intent");
-                } else {
-                    Log.d (TAG, "find the device in the intent");
-                }
+            Log.d (TAG, "first time in the service, discovery it");
+
+        savedMac = DBService.getSavedBTMac ();
+        if (D)
+            Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
+
+        discover.discovery ();
+        synchronized (SPP_UUID) {
+            try {
+                if (D)
+                    Log.d (TAG, "Waiting for connect to bluetooth device ...");
+                SPP_UUID.wait ();
+            } catch (InterruptedException e) {
+                e.printStackTrace ();
             }
         }
-*/
-
-//        if (device == null) { // 首次进入服务
-            if (D)
-                Log.d (TAG, "first time in the service, discovery it");
-
-            savedMac = DBService.getSavedBTMac ();
-/*
-            if (savedMac == null) {
-                if (D)
-                    Log.d (TAG, "the device's mac is not saved. active the main activity to config it.");
-
-                handler.sendEmptyMessage (STATE_START_MAIN_ACTIVITY);
-                return;
-            } else {
-*/
-            if (D)
-                Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
-
-            discover.discovery ();
-            synchronized (SPP_UUID) {
-                try {
-                    if (D)
-                        Log.d (TAG, "Waiting for connect to bluetooth device ...");
-                    SPP_UUID.wait ();
-                } catch (InterruptedException e) {
-                    e.printStackTrace ();
-                }
-            }
-//            }
-//        }
 
         connect ();
     }
@@ -180,21 +131,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
     }
 
-/*
-    @Override
-    public void handleMessage (Message message) {
-        switch (message.what) {
-            case STATE_START_MAIN_ACTIVITY :
-                Intent intent = new Intent (this, MainActivity.class);
-                intent.putExtra (CNG.ACTION_NOT_BIND, "true");
-                intent.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                startActivity (intent);
-                break;
-        }
-    }
-*/
-
-    Queue<Node> copyData () {
+    Queue<Transformer> copyData () {
         synchronized (this) {
             return new LinkedList<> (queue);
         }
@@ -233,6 +170,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     private void connect () {
         if (D)
             Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
+        BluetoothWriter writer = null;
         try {
             if (connectToDevice ()) {
                 synchronized (this) {
@@ -240,10 +178,14 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 }
 
                 InputStream in = socket.getInputStream ();
+                writer = new BluetoothWriter ("BTHeartbeat", socket.getOutputStream ());
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
+                CNG.runInNonUIThread (writer);
+                Gson g = new GsonBuilder ().create ();
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
-                    Log.d (TAG, line);
+                    Transformer trans = g.fromJson (line.trim (), Transformer.class);
+                    queue.add (trans);
                 }
             }
         } catch (IOException ex) {
@@ -256,6 +198,9 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 socket.close ();
             } catch (IOException ex) {
                 Log.w (TAG, ex.getMessage (), ex);
+            }
+            if (writer != null) {
+                writer.shutdown ();
             }
         }
     }
