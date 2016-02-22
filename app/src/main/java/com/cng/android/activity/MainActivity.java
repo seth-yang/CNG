@@ -97,8 +97,10 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
 
     @Override
     protected void onPause () {
+/*
         if (binder != null)
             unbindService (conn);
+*/
         running = false;
         super.onPause ();
     }
@@ -204,7 +206,9 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 break;
             case DEVICE_CONNECTED :
                 dialog.dismiss ();
-                ((ChartView) findViewById (R.id.chart)).setProvider (binder);
+                ChartView chart = (ChartView) findViewById (R.id.chart);
+                chart.setProvider (binder);
+                chart.invalidate ();
                 break;
             case START_SERVICE :
                 Intent intent = new Intent (this, StateMonitorService.class);

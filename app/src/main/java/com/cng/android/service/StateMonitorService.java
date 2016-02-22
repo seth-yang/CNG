@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
@@ -34,7 +35,8 @@ import java.util.UUID;
 import static com.cng.android.CNG.D;
 
 public class StateMonitorService extends IntentService implements IBluetoothListener {
-    public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
+//    public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
+    public static final UUID SPP_UUID = UUID.fromString ("a60f35f0-b93a-11de-8a39-08002009c666");
 
     private static final String TAG = StateMonitorService.class.getSimpleName ();
     private static final int STATE_START_MAIN_ACTIVITY = 0;
@@ -121,7 +123,6 @@ public class StateMonitorService extends IntentService implements IBluetoothList
 
     @Override
     public void onDeviceFound (BluetoothDevice device) {
-        discover.cancel ();
         this.device = device;
         if (D)
             Log.d (TAG, "find BT device = " + device);
@@ -132,7 +133,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     }
 
     Queue<Transformer> copyData () {
-        synchronized (this) {
+        synchronized (SPP_UUID) {
             return new LinkedList<> (queue);
         }
     }
@@ -146,16 +147,32 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         while (retry > 0) {
             if (D)
                 Log.d (TAG, "Trying to connect to BT device ...");
-            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
+
+            try {
+                Method m = device.getClass ().getDeclaredMethod ("createRfcommSocket", int.class);
+                socket = (BluetoothSocket) m.invoke (device, 1);
+            } catch (Exception e) {
+                e.printStackTrace ();
+            }
+//            device.cr
+//            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
             try {
                 socket.connect ();
+                discover.cancel ();
                 if (D)
                     Log.d (TAG, "The BT Device Connected!!!");
                 return true;
             } catch (IOException ex) {
                 retry --;
-                if (D)
+                if (D) {
                     Log.d (TAG, "Fail to connect to BT device, try again");
+                }
+                Log.w (TAG, ex.getMessage (), ex);
+                try {
+                    Thread.sleep (1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace ();
+                }
                 if (socket != null) try {
                     socket.close ();
                 } catch (IOException ioe) {
@@ -184,8 +201,14 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 Gson g = new GsonBuilder ().create ();
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
-                    Transformer trans = g.fromJson (line.trim (), Transformer.class);
-                    queue.add (trans);
+                    try {
+                        Transformer trans = g.fromJson (line.trim (), Transformer.class);
+                        synchronized (SPP_UUID) {
+                            queue.add (trans);
+                        }
+                    } catch (Exception ex) {
+                        // ignore
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -212,7 +235,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
         DBService.init (this);
 
-        int capacity = DBService.getQueueCapacity ();
+        int capacity = 60; //DBService.getQueueCapacity ();
         queue = new FixedSizeQueue<> (capacity);
         if (D)
             Log.d (TAG, "queue init as FixedQueue<" + capacity + ">");

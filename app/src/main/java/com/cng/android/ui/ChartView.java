@@ -50,10 +50,10 @@ public class ChartView extends View {
 
     @Override
     protected void onDraw (Canvas canvas) {
-        if (provider == null)
-            return;
-        drawBackground (canvas);
-        drawT (canvas);
+        if (provider != null && provider.getNodes () != null && !provider.getNodes ().isEmpty ()) {
+            drawBackground (canvas);
+            drawT (canvas);
+        }
         postInvalidateDelayed (interval);
     }
 
@@ -100,9 +100,9 @@ public class ChartView extends View {
         drawLabel (canvas, width, y, label, 45);
 
         textPaint.setColor (0xFF00FF00);
-        label = df.format (holder.minT);
+        label = df.format (holder.minT - 5);
         drawLabel (canvas, LEFT, y, label, 0);
-        label = df.format (holder.maxT);
+        label = df.format (holder.maxT + 5);
         drawLabel (canvas, LEFT, 30, label, 0);
     }
 
@@ -121,7 +121,7 @@ public class ChartView extends View {
     }
 
     private void drawT (Canvas canvas) {
-        double delta = holder.maxT - holder.minT;
+        double delta = holder.maxT + 5 - (holder.minT - 5);
         double base  = getHeight () - BOTTOM;
         @SuppressWarnings ("unchecked")
         List<Transformer> nodes = (List<Transformer>) provider.getNodes ();
@@ -131,7 +131,7 @@ public class ChartView extends View {
         LINE_PAIN.setColor (0xFF00FF00);
         int index = 0;
         for (Transformer t : nodes) {
-            double d = t.temperature - holder.minT;
+            double d = t.temperature - (holder.minT - 5);
             float y = (float) (d / delta);
             y = (float) (base * (1 - y));
             canvas.drawCircle (x, y, 2, LINE_PAIN);

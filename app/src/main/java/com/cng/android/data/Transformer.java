@@ -9,9 +9,9 @@ import java.io.Serializable;
  */
 public class Transformer implements Serializable {
     @SerializedName ("T")
-    public Double temperature;
+    public Double temperature = 0d;
     @SerializedName ("H")
-    public Double humidity;
+    public Double humidity = 0d;
 
     public final long timestamp;
 
