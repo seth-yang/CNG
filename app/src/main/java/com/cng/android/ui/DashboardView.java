@@ -29,9 +29,10 @@ public class DashboardView extends View implements IMessageHandler {
     private Double base = null, value = range / 2;
     private String title;
     private int
-            labelColor = -1, pointColor = Color.YELLOW,
-            backgroundColor = 0xFF000000;
-    private int trackSize = 30;
+            labelColor      = 0xCCCCCCFF,
+            pointColor      = Color.YELLOW,
+            backgroundColor = Color.BLACK;
+    private int trackSize   = 30;
 
     private Point center;
     private Paint paint;
@@ -41,13 +42,14 @@ public class DashboardView extends View implements IMessageHandler {
             new int[] {Color.RED, Color.GREEN, Color.GREEN, Color.RED},
             new float[] {0, 5/18f, 5/9f, 5/6f}
     );
+
     private Handler handler;
     private RectF outer;
 
     private float normalFontSize = 30, valueFontSize = 40, titleFontSize = 60;
     private float normalStrokeSize = 1f, halfStrokeSize = 2f, valueStrokeSize = 3f;
 
-    private static final DecimalFormat df = new DecimalFormat ("0.0");
+    private DecimalFormat formatter = new DecimalFormat ("0.0");
 
     private boolean init = false;
 
@@ -70,171 +72,218 @@ public class DashboardView extends View implements IMessageHandler {
         return gap;
     }
 
-    public void setGap (float gap) {
+    public DashboardView setGap (float gap) {
         if (this.gap != gap) {
             this.gap = gap;
             repaint ();
         }
+
+        return this;
     }
 
     public double getMin () {
         return min;
     }
 
-    public void setMin (double min) {
+    public DashboardView setMin (double min) {
         if (this.min != min) {
             this.min = min;
             range = max - min;
             repaint ();
         }
+        return this;
     }
 
     public double getMax () {
         return max;
     }
 
-    public void setMax (double max) {
+    public DashboardView setMax (double max) {
         if (this.max != max) {
             this.max = max;
             range = max - min;
             repaint ();
         }
+        return this;
     }
 
     public double getBase () {
         return base;
     }
 
-    public void setBase (Double base) {
+    public DashboardView setBase (Double base) {
         if ((base == null && this.base != null) ||
             (base != null && this.base == null) ||
             (base != null && !base.equals (this.base))) {
             this.base = base;
             repaint ();
         }
+
+        return this;
     }
 
     public double getValue () {
         return value;
     }
 
-    public void setValue (double value) {
+    public DashboardView setValue (double value) {
         if (this.value != value) {
             this.value = value;
             repaint ();
         }
+        return this;
     }
 
     public String getTitle () {
         return title;
     }
 
-    public void setTitle (String title) {
+    public DashboardView setTitle (String title) {
         String a = String.valueOf (this.title), b = String.valueOf (title);
         if (!a.equals (b)) {
             this.title = title;
             repaint ();
         }
+
+        return this;
     }
 
     public int getLabelColor () {
         return labelColor;
     }
 
-    public void setLabelColor (int labelColor) {
+    public DashboardView setLabelColor (int labelColor) {
         if (this.labelColor != labelColor) {
             this.labelColor = labelColor;
             repaint ();
         }
+
+        return this;
     }
 
     public int getPointColor () {
         return pointColor;
     }
 
-    public void setPointColor (int pointColor) {
+    public DashboardView setPointColor (int pointColor) {
         if (this.pointColor != pointColor) {
             this.pointColor = pointColor;
             repaint ();
         }
+
+        return this;
     }
 
     public int getBackgroundColor () {
         return backgroundColor;
     }
 
-    @Override
-    public void setBackgroundColor (int backgroundColor) {
+    public DashboardView setBoardBackgroundColor (int backgroundColor) {
         if (this.backgroundColor != backgroundColor) {
             this.backgroundColor = backgroundColor;
             repaint ();
         }
+
+        return this;
     }
 
     public float getNormalFontSize () {
         return normalFontSize;
     }
 
-    public void setNormalFontSize (float normalFontSize) {
+    public DashboardView setNormalFontSize (float normalFontSize) {
         if (normalFontSize != this.normalFontSize) {
             this.normalFontSize = normalFontSize;
             repaint ();
         }
+
+        return this;
     }
 
     public float getValueFontSize () {
         return valueFontSize;
     }
 
-    public void setValueFontSize (float valueFontSize) {
+    public DashboardView setValueFontSize (float valueFontSize) {
         if (valueFontSize != this.valueFontSize) {
             this.valueFontSize = valueFontSize;
             repaint ();
         }
+
+        return this;
     }
 
     public float getTitleFontSize () {
         return titleFontSize;
     }
 
-    public void setTitleFontSize (float titleFontSize) {
+    public DashboardView setTitleFontSize (float titleFontSize) {
         if (titleFontSize != this.titleFontSize) {
             this.titleFontSize = titleFontSize;
             repaint ();
         }
+
+        return this;
     }
 
     public float getNormalStrokeSize () {
         return normalStrokeSize;
     }
 
-    public void setNormalStrokeSize (float normalStrokeSize) {
+    public DashboardView setNormalStrokeSize (float normalStrokeSize) {
         if (normalStrokeSize != this.normalStrokeSize) {
             this.normalStrokeSize = normalStrokeSize;
             repaint ();
         }
+
+        return this;
     }
 
     public float getHalfStrokeSize () {
         return halfStrokeSize;
     }
 
-    public void setHalfStrokeSize (float halfStrokeSize) {
+    public DashboardView setHalfStrokeSize (float halfStrokeSize) {
         if (halfStrokeSize != this.halfStrokeSize) {
             this.halfStrokeSize = halfStrokeSize;
             repaint ();
         }
+
+        return this;
     }
 
     public float getValueStrokeSize () {
         return valueStrokeSize;
     }
 
-    public void setValueStrokeSize (float valueStrokeSize) {
+    public DashboardView setValueStrokeSize (float valueStrokeSize) {
         if (valueStrokeSize != this.valueStrokeSize) {
             this.valueStrokeSize = valueStrokeSize;
             repaint ();
         }
+
+        return this;
+    }
+
+    public DecimalFormat getFormatter () {
+        return formatter;
+    }
+
+    public DashboardView setFormatter (DecimalFormat formatter) {
+        this.formatter = formatter;
+        repaint ();
+
+        return this;
+    }
+
+    public SweepGradient getGradient () {
+        return gradient;
+    }
+
+    public DashboardView setGradient (SweepGradient gradient) {
+        this.gradient = gradient;
+        repaint ();
+        return this;
     }
 
     @Override
@@ -275,7 +324,7 @@ public class DashboardView extends View implements IMessageHandler {
             if (i % 5 == 0) {
                 if (i % 10 == 0) {
                     double value = i * range / 100 + min;
-                    String label = df.format (value);
+                    String label = formatter.format (value);
                     float length = textPaint.measureText (label);
                     canvas.drawText (label, -length / 2, -radius - 10, textPaint);
                     y1 += 20;
@@ -328,7 +377,7 @@ public class DashboardView extends View implements IMessageHandler {
         // draw base label
         textPaint.setColor (labelColor);
         textPaint.setTextSize (valueFontSize);
-        String label = df.format (value);
+        String label = formatter.format (value);
         float length = textPaint.measureText (label);
         canvas.drawText (label, -length / 2, -radius - 10, textPaint);
 
@@ -347,7 +396,7 @@ public class DashboardView extends View implements IMessageHandler {
         // draw base label
         textPaint.setColor (pointColor);
         textPaint.setTextSize (valueFontSize);
-        String label = df.format (value);
+        String label = formatter.format (value);
         float length = textPaint.measureText (label);
         canvas.drawText (label, -length / 2, -radius - 10, textPaint);
 
