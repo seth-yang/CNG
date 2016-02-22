@@ -51,7 +51,7 @@ public class BluetoothWriter implements Runnable {
             }
         }
         if (CNG.D)
-            Log.d (TAG, "shutdown the thread.");
+            Log.d (TAG, "shutdown the BT Writer thread.");
     }
 
     public void shutdown () {

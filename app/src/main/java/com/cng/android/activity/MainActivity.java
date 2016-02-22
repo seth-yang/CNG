@@ -17,10 +17,11 @@ import android.view.View;
 
 import com.cng.android.CNG;
 import com.cng.android.R;
+import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
 import com.cng.android.service.MonitorServiceBinder;
 import com.cng.android.service.StateMonitorService;
-import com.cng.android.ui.ChartView;
+import com.cng.android.ui.DashboardView;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;
 
@@ -31,6 +32,7 @@ import static com.cng.android.CNG.D;
  */
 public class MainActivity extends Activity implements Runnable, IMessageHandler {
     public static final String TAG = MainActivity.class.getSimpleName ();
+    public static final Object locker = new byte [0];
 
     private static final int REQ_CODE                    = 1;
     private static final int SET_DIALOG_TITLE_CONNECTING = 2;
@@ -45,7 +47,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
     private Message local = new Message ();
     private MonitorServiceBinder binder;
     private Intent service;
-    private boolean serviceStarted = false, running = false;
+    private DashboardView temperature, humidity;
+    private boolean serviceStarted = false, running = false, connected = false;
 
     private ServiceConnection conn = new ServiceConnection () {
         @Override
@@ -77,6 +80,11 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
         handler = new HandlerDelegate (this);
         service = new Intent (this, StateMonitorService.class);
 
+        temperature = ((DashboardView) findViewById (R.id.temperature))
+                .setTitle (getString (R.string.title_temperature));
+        humidity = ((DashboardView) findViewById (R.id.humidity))
+                .setTitle (getString (R.string.title_humidity));
+
         dialog = new ProgressDialog (this);
         dialog.setTitle (R.string.title_processing);
         dialog.show ();
@@ -97,10 +105,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
 
     @Override
     protected void onPause () {
-/*
         if (binder != null)
             unbindService (conn);
-*/
         running = false;
         super.onPause ();
     }
@@ -175,17 +181,32 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
             while (running) {
 //                Log.d (TAG, "binder = " + binder + ", connected = " + (binder != null && binder.isConnected ()));
                 if (binder != null && binder.isConnected ()) {
-                    if (CNG.D)
-                        Log.d (TAG, "The bluetooth device is connected.");
-                    handler.sendEmptyMessage (DEVICE_CONNECTED);
+                    synchronized (locker) {
+                        if (!connected) {
+                            if (CNG.D)
+                                Log.d (TAG, "The bluetooth device is connected.");
+                            handler.sendEmptyMessage (DEVICE_CONNECTED);
+                        }
+                    }
 
-                    return;
-                }
-
-                try {
-                    Thread.sleep (10);
-                } catch (InterruptedException ex) {
-                    Log.w (TAG, ex.getMessage (), ex);
+                    while (running) {
+                        Transformer transformer = binder.getData ();
+                        if (transformer != null) {
+                            temperature.setValue (transformer.temperature);
+                            humidity.setValue (transformer.humidity);
+                        }
+                        try {
+                            Thread.sleep (1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace ();
+                        }
+                    }
+                } else {
+                    try {
+                        Thread.sleep (10);
+                    } catch (InterruptedException ex) {
+                        Log.w (TAG, ex.getMessage (), ex);
+                    }
                 }
             }
 
@@ -206,9 +227,9 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 break;
             case DEVICE_CONNECTED :
                 dialog.dismiss ();
-                ChartView chart = (ChartView) findViewById (R.id.chart);
-                chart.setProvider (binder);
-                chart.invalidate ();
+                synchronized (locker) {
+                    connected = true;
+                }
                 break;
             case START_SERVICE :
                 Intent intent = new Intent (this, StateMonitorService.class);

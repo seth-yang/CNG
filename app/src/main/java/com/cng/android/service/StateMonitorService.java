@@ -18,7 +18,6 @@ import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
-import com.cng.android.util.FixedSizeQueue;
 import com.cng.android.util.IBluetoothListener;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,8 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.UUID;
 
 import static com.cng.android.CNG.D;
@@ -47,10 +44,11 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     private BluetoothSocket socket;
     private boolean connected;
     private String savedMac;
+    private Transformer data;
 
     private static int COUNT = 0;
 
-    private FixedSizeQueue<Transformer> queue;
+//    private FixedSizeQueue<Transformer> queue;
 
     public StateMonitorService () {
         super ("StateMonitorService");
@@ -89,9 +87,11 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             Log.d (TAG, "handle intent");
         }
 
+/*
         if (queue == null) {
             initFixedQueue ();
         }
+*/
 
         if (D)
             Log.d (TAG, "first time in the service, discovery it");
@@ -117,6 +117,8 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     @Override
     public void onDestroy () {
         super.onDestroy ();
+        if (D)
+            Log.d (TAG, "State Monitor Service destroyed.");
         Intent intent = new Intent (this, getClass ());
         startService (intent);
     }
@@ -132,10 +134,15 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
     }
 
+/*
     Queue<Transformer> copyData () {
         synchronized (SPP_UUID) {
             return new LinkedList<> (queue);
         }
+    }
+*/
+    Transformer getData () {
+        return data;
     }
 
     synchronized boolean isConnected () {
@@ -154,7 +161,6 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             } catch (Exception e) {
                 e.printStackTrace ();
             }
-//            device.cr
 //            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
             try {
                 socket.connect ();
@@ -201,10 +207,13 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 Gson g = new GsonBuilder ().create ();
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
+                    if (D)
+                        Log.d (TAG, "Got a message: " + line);
                     try {
                         Transformer trans = g.fromJson (line.trim (), Transformer.class);
                         synchronized (SPP_UUID) {
-                            queue.add (trans);
+                            data = trans;
+//                            queue.add (trans);
                         }
                     } catch (Exception ex) {
                         // ignore
@@ -228,6 +237,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
     }
 
+/*
     private void initFixedQueue () {
         if (D) {
             Log.d (TAG, "trying to init database.");
@@ -240,4 +250,5 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         if (D)
             Log.d (TAG, "queue init as FixedQueue<" + capacity + ">");
     }
+*/
 }

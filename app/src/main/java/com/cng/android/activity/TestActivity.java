@@ -23,18 +23,11 @@ public class TestActivity extends Activity {
         setContentView (R.layout.activity_test);
         temperature = (DashboardView) findViewById (R.id.temperature);
         temperature.setTitle (getString (R.string.title_temperature))
-                .setMin (-25).setMax (125).setLabelColor (0xCCCCCCFF);
+                .setMin (-25).setMax (125);
 
         humidity = (DashboardView) findViewById (R.id.humidity);
         humidity.setTitle (getString (R.string.title_humidity))
-                .setFormatter (new DecimalFormat ("0"))
-                .setPointColor (Color.GREEN)
-                .setTitleFontSize (45).setGradient (new SweepGradient (
-                    0, 0,
-                    new int[] {Color.GREEN, Color.RED, Color.GREEN, Color.RED, Color.GREEN, Color.RED},
-                    new float[] {0, 1/6f, 1/3f, 1/2f, 2/3f, 5/6f}))
-                .setLabelColor (Color.BLUE);
-
+                .setFormatter (new DecimalFormat ("0"));
         thread = new Thread () {
             @Override
             public void run () {

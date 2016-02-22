@@ -8,10 +8,10 @@ import android.graphics.Point;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.inputmethod.CursorAnchorInfo;
 
 import com.cng.android.data.IDataProvider;
 import com.cng.android.data.Transformer;
+import com.cng.android.util.FixedSizeQueue;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -27,6 +27,7 @@ public class ChartView extends View {
     private TextPaint textPaint = new TextPaint ();
     private static final int LEFT = 100, BOTTOM = 100;
     private IDataProvider provider;
+    private FixedSizeQueue<Transformer> queue;
 
     public ChartView (Context context) {
         super (context);
@@ -50,7 +51,14 @@ public class ChartView extends View {
 
     @Override
     protected void onDraw (Canvas canvas) {
-        if (provider != null && provider.getNodes () != null && !provider.getNodes ().isEmpty ()) {
+        if (provider != null) {
+            Transformer data = provider.getData ();
+//        if (provider != null && provider.getNodes () != null && !provider.getNodes ().isEmpty ()) {
+            if (data != null) {
+                Transformer t = queue.get (queue.size () - 1);
+                if (t.timestamp < data.timestamp)
+                    queue.add (data);
+            }
             drawBackground (canvas);
             drawT (canvas);
         }
@@ -66,12 +74,9 @@ public class ChartView extends View {
     }
 
     private Holder processData () {
-//        Transformer[] nodes = (Transformer[]) provider.getNodes ().toArray ();
-        @SuppressWarnings ("unchecked")
-        List<Transformer> nodes = (List<Transformer>) provider.getNodes ();
-        holder.min = nodes.get (0).timestamp;
-        holder.max = nodes.get (nodes.size () - 1).timestamp;
-        for (Transformer t : nodes) {
+        holder.min = queue.get (0).timestamp;
+        holder.max = queue.get (queue.size () - 1).timestamp;
+        for (Transformer t : queue) {
             if (t.humidity > holder.maxH) holder.maxH = t.humidity;
             if (t.humidity < holder.minH) holder.minH = t.humidity;
             if (t.temperature > holder.maxT) holder.maxT = t.temperature;
@@ -79,7 +84,6 @@ public class ChartView extends View {
         }
 
         return holder;
-//        return new Holder (min, max, minH, maxH, minT, maxT);
     }
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat ("HH:mm:ss");
@@ -123,14 +127,12 @@ public class ChartView extends View {
     private void drawT (Canvas canvas) {
         double delta = holder.maxT + 5 - (holder.minT - 5);
         double base  = getHeight () - BOTTOM;
-        @SuppressWarnings ("unchecked")
-        List<Transformer> nodes = (List<Transformer>) provider.getNodes ();
         List<Point> points = new ArrayList<> ();
         int x = LEFT;
         Path path = new Path ();
         LINE_PAIN.setColor (0xFF00FF00);
         int index = 0;
-        for (Transformer t : nodes) {
+        for (Transformer t : queue) {
             double d = t.temperature - (holder.minT - 5);
             float y = (float) (d / delta);
             y = (float) (base * (1 - y));
@@ -142,7 +144,6 @@ public class ChartView extends View {
             Point p1 = points.get (i), p2 = points.get (i + 1);
             canvas.drawLine (p1.x, p1.y, p2.x, p2.y, LINE_PAIN);
         }
-//        canvas.drawPath (path, LINE_PAIN);
     }
 
     private static class Holder {

@@ -29,7 +29,7 @@ public class DashboardView extends View implements IMessageHandler {
     private Double base = null, value = range / 2;
     private String title;
     private int
-            labelColor      = 0xCCCCCCFF,
+            labelColor      = Color.MAGENTA,
             pointColor      = Color.YELLOW,
             backgroundColor = Color.BLACK;
     private int trackSize   = 30;
@@ -44,7 +44,7 @@ public class DashboardView extends View implements IMessageHandler {
     );
 
     private Handler handler;
-    private RectF outer;
+    private RectF outer = new RectF (-radius, -radius, radius, radius);
 
     private float normalFontSize = 30, valueFontSize = 40, titleFontSize = 60;
     private float normalStrokeSize = 1f, halfStrokeSize = 2f, valueStrokeSize = 3f;

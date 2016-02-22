@@ -3,9 +3,17 @@
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <com.cng.android.ui.ChartView
-        android:id="@+id/chart"
+    <com.cng.android.ui.DashboardView
+        android:id="@+id/temperature"
         android:layout_weight="1"
-        android:layout_width="0dp"
+        android:layout_width="0sp"
+        android:layout_height="match_parent"/>
+    <TextView
+        android:layout_width="30sp"
+        android:layout_height="match_parent"/>
+    <com.cng.android.ui.DashboardView
+        android:id="@+id/humidity"
+        android:layout_weight="1"
+        android:layout_width="0sp"
         android:layout_height="match_parent"/>
 </LinearLayout>
