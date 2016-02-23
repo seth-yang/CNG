@@ -24,6 +24,7 @@ import com.cng.android.service.StateMonitorService;
 import com.cng.android.ui.DashboardView;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;
+import com.cng.android.util.Keys;
 
 import static com.cng.android.CNG.D;
 
@@ -147,8 +148,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
 
     @Override
     public void run () {
-        String savedMac = DBService.getSavedBTMac ();
-        if (savedMac == null) {
+        if (!DBService.exist (Keys.SAVED_MAC)) {
             handler.sendEmptyMessage (REQ_CODE);
         } else {
             if (!serviceStarted) {
@@ -244,10 +244,17 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
         startActivity (intent);
     }
 
+    private void showSettings () {
+
+    }
+
     private void processMenuItem (MenuItem item) {
         switch (item.getItemId ()) {
             case R.id.menu_choose_device :
                 showFindActivity ();
+                break;
+            case R.id.menu_setting :
+                showSettings ();
                 break;
         }
     }

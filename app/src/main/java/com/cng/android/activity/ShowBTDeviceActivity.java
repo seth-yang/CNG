@@ -12,12 +12,14 @@ import android.widget.ListView;
 
 import com.cng.android.CNG;
 import com.cng.android.adapter.BluetoothDeviceListAdapter;
+import com.cng.android.data.SetupItem;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IBluetoothListener;
 import com.cng.android.util.IMessageHandler;
 import com.cng.android.R;
+import com.cng.android.util.Keys;
 
 import static com.cng.android.CNG.D;
 
@@ -79,7 +81,12 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
                 BluetoothDevice device = bundle.getParcelable ("device");
                 if (device != null) {
                     String mac = device.getAddress ();
-                    DBService.saveOrUpdateBTMac (mac);
+                    SetupItem item = new SetupItem (false, SetupItem.Type.Text);
+                    item.setChinese (getString (R.string.label_device_address));
+                    item.setName (Keys.SAVED_MAC);
+                    item.setValue (mac);
+                    item.setVisible (true);
+                    DBService.saveSetupItem (item);
                     handler.sendEmptyMessage (RETURN);
                 }
                 break;

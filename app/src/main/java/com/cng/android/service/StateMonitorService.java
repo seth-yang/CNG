@@ -15,10 +15,12 @@ import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.MainActivity;
 import com.cng.android.concurrent.BluetoothWriter;
+import com.cng.android.data.SetupItem;
 import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.IBluetoothListener;
+import com.cng.android.util.Keys;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -87,31 +89,28 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             Log.d (TAG, "handle intent");
         }
 
-/*
-        if (queue == null) {
-            initFixedQueue ();
-        }
-*/
-
         if (D)
             Log.d (TAG, "first time in the service, discovery it");
 
-        savedMac = DBService.getSavedBTMac ();
-        if (D)
-            Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
+        SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
+        if (item != null) {
+            savedMac = (String) item.getValue ();
+            if (D)
+                Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
 
-        discover.discovery ();
-        synchronized (SPP_UUID) {
-            try {
-                if (D)
-                    Log.d (TAG, "Waiting for connect to bluetooth device ...");
-                SPP_UUID.wait ();
-            } catch (InterruptedException e) {
-                e.printStackTrace ();
+            discover.discovery ();
+            synchronized (SPP_UUID) {
+                try {
+                    if (D)
+                        Log.d (TAG, "Waiting for connect to bluetooth device ...");
+                    SPP_UUID.wait ();
+                } catch (InterruptedException e) {
+                    e.printStackTrace ();
+                }
             }
-        }
 
-        connect ();
+            connect ();
+        }
     }
 
     @Override
@@ -134,13 +133,6 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
     }
 
-/*
-    Queue<Transformer> copyData () {
-        synchronized (SPP_UUID) {
-            return new LinkedList<> (queue);
-        }
-    }
-*/
     Transformer getData () {
         return data;
     }
@@ -213,7 +205,6 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                         Transformer trans = g.fromJson (line.trim (), Transformer.class);
                         synchronized (SPP_UUID) {
                             data = trans;
-//                            queue.add (trans);
                         }
                     } catch (Exception ex) {
                         // ignore
@@ -236,19 +227,4 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             }
         }
     }
-
-/*
-    private void initFixedQueue () {
-        if (D) {
-            Log.d (TAG, "trying to init database.");
-            Log.d (TAG, "trying to init fixed queue.");
-        }
-        DBService.init (this);
-
-        int capacity = 60; //DBService.getQueueCapacity ();
-        queue = new FixedSizeQueue<> (capacity);
-        if (D)
-            Log.d (TAG, "queue init as FixedQueue<" + capacity + ">");
-    }
-*/
 }

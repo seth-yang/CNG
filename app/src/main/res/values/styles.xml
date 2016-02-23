@@ -14,5 +14,10 @@
     <style name="FullscreenActionBarStyle">
         <item name="android:background">@color/black_overlay</item>
     </style>
-
+    <style name="form_label">
+        <item name="android:textSize">@dimen/form_label_font_size</item>
+    </style>
+    <style name="inner_button">
+        <item name="android:layout_marginLeft">20sp</item>
+    </style>
 </resources>
