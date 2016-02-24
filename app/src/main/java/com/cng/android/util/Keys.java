@@ -6,4 +6,5 @@ package com.cng.android.util;
 public interface Keys {
     String SAVED_MAC = "saved.mac";
     String APP_UUID = "app.uuid";
+    String APP_VERSION = "app.version";
 }

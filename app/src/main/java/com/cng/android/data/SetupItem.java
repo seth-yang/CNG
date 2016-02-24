@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public class SetupItem implements Serializable {
     public enum Type {
-        Text, Integer, Boolean, Double, URI
+        Text, Integer, Boolean, Double, Uri, Password, Email
     }
 
     private String name, chinese;

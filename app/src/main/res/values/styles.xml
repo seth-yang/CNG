@@ -20,4 +20,26 @@
     <style name="inner_button">
         <item name="android:layout_marginLeft">20sp</item>
     </style>
+
+    <style name="form_title" parent="AppTheme">
+        <item name="android:layout_margin">@dimen/form_title_margin</item>
+        <item name="android:textColor">#d32121</item>
+        <item name="android:textSize">@dimen/form_title_font_size</item>
+    </style>
+    <style name="form_label_right" parent="form_label">
+        <item name="android:gravity">right|center_vertical</item>
+        <item name="android:paddingRight">@dimen/activity_horizontal_margin</item>
+    </style>
+    <style name="setup_label" parent="form_label_right">
+        <item name="android:gravity">right|top</item>
+        <item name="android:width">160sp</item>
+    </style>
+    <style name="setup_item" parent="form_label">
+        <item name="android:gravity">left|top</item>
+        <item name="android:textSize">@dimen/form_label_font_size</item>
+    </style>
+    <style name="dialog_title" parent="form_label">
+        <item name="android:gravity">left|center_vertical</item>
+        <item name="android:padding">@dimen/form_title_margin</item>
+    </style>
 </resources>

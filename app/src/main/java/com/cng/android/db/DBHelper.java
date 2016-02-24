@@ -14,25 +14,12 @@ class DBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME    = "CNG.db";
     public static final int    DATABASE_VERSION = 1;
 
-/*
-    public static final String TABLE_NAME = "conf", NAME = "_name", VALUE = "_value";
-    private static final String DDL_CREATE = "CREATE TABLE " + TABLE_NAME +
-            " (" + NAME + " VARCHAR(32) NOT NULL PRIMARY KEY, " +
-            VALUE + " TEXT)";
-*/
-
     public DBHelper (Context context) {
         super (context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate (SQLiteDatabase db) {
-/*
-        if (CNG.D)
-            Log.d (SQLiteOpenHelper.class.getSimpleName (), "Creating Data Table: " + DDL_CREATE);
-        db.execSQL (DDL_CREATE);
-*/
-
         if (CNG.D)
             Log.d (SQLiteOpenHelper.class.getSimpleName (), "preparing to create table " + DBSchema.Config.TABLE_NAME);
         db.execSQL (DBSchema.Config.DDL_CREATE);

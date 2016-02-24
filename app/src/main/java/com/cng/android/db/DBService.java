@@ -37,18 +37,6 @@ public class DBService {
             db = new DBHelper (context).getWritableDatabase ();
             if (D)
                 Log.d (TAG, "database create as: " + db);
-
-/*
-            if (D)
-                Log.d (TAG, "trying to fetch queue capacity ");
-            if (getQueueCapacity () < 0) {
-                if (D)
-                    Log.d (TAG, "queue capacity is not set, set it to 3600");
-                insert (QUEUE_CAPACITY, String.valueOf (3600));
-                if (D)
-                    Log.d (TAG, "capacity set!");
-            }
-*/
         } else if (D) {
             Log.d (TAG, "the database has config, nothing to do.");
         }
@@ -244,8 +232,9 @@ public class DBService {
             case Integer:
                 item.setValue (cursor.getInt (2));
                 break;
-            case Text:
+            default :
                 item.setValue (cursor.getString (2));
+                break;
         }
         String editable = cursor.getString (4);
         item.setEditable (Boolean.parseBoolean (editable));

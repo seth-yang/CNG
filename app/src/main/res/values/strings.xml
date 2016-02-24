@@ -89,4 +89,10 @@
 
     <string name="btn_ok">确定</string>
     <string name="btn_cancel">取消</string>
+    <string name="btn_yes">是</string>
+    <string name="btn_no">否</string>
+
+    <string name="no_network">没有可用的网络</string>
+    <string name="setup_network_prompt">是否对网络进行设置?</string>
+    <string name="tip_confirm_exit">再次按下回退键退出程序</string>
 </resources>

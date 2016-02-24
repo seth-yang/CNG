@@ -250,7 +250,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
     }
 
     private void showSettings () {
-
+        Intent intent = new Intent (this, SettingsActivity.class);
+        startActivity (intent);
     }
 
     private void processMenuItem (MenuItem item) {
