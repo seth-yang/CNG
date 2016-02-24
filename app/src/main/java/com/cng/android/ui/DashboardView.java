@@ -46,7 +46,7 @@ public class DashboardView extends View implements IMessageHandler {
     private Handler handler;
     private RectF outer = new RectF (-radius, -radius, radius, radius);
 
-    private float normalFontSize = 30, valueFontSize = 40, titleFontSize = 60;
+    private float normalFontSize = 20, valueFontSize = 30, titleFontSize = 40;
     private float normalStrokeSize = 1f, halfStrokeSize = 2f, valueStrokeSize = 3f;
 
     private DecimalFormat formatter = new DecimalFormat ("0.0");

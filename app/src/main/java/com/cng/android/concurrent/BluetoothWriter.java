@@ -16,7 +16,7 @@ public class BluetoothWriter implements Runnable {
 
     private String name;
     private OutputStream out;
-    private long interval = 8000;
+    private long interval = 1000;
     private boolean running = true;
 
     public BluetoothWriter (String name, OutputStream out) {

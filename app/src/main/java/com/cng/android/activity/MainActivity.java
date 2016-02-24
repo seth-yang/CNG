@@ -26,6 +26,8 @@ import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;
 import com.cng.android.util.Keys;
 
+import java.text.DecimalFormat;
+
 import static com.cng.android.CNG.D;
 
 /**
@@ -82,7 +84,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
         service = new Intent (this, StateMonitorService.class);
 
         temperature = ((DashboardView) findViewById (R.id.temperature))
-                .setTitle (getString (R.string.title_temperature));
+                .setTitle (getString (R.string.title_temperature)).setMin (-25.0).setMax (125.0)
+                .setFormatter (new DecimalFormat ("#0.00"));
         humidity = ((DashboardView) findViewById (R.id.humidity))
                 .setTitle (getString (R.string.title_humidity));
 
@@ -98,7 +101,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
     @Override
     protected void onResume () {
         super.onResume ();
-        Log.d (TAG, "++++++++++++ Main Activity onResume ++++++++++++");
+        if (D)
+            Log.d (TAG, "++++++++++++ Main Activity onResume ++++++++++++");
         dialog.show ();
 
         CNG.runInNonUIThread (this);
@@ -175,11 +179,12 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 }
             }
 
-            Log.d (TAG, "++++++++++++ waiting for connect to BT device ++++++++++++");
-            Log.d (TAG, "Binder = " + binder);
+            if (D) {
+                Log.d (TAG, "++++++++++++ waiting for connect to BT device ++++++++++++");
+                Log.d (TAG, "Binder = " + binder);
+            }
             running = true;
             while (running) {
-//                Log.d (TAG, "binder = " + binder + ", connected = " + (binder != null && binder.isConnected ()));
                 if (binder != null && binder.isConnected ()) {
                     synchronized (locker) {
                         if (!connected) {
