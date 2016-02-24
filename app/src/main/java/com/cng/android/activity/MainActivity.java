@@ -177,6 +177,8 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                 } else if (D) {
                     Log.w (TAG, "Can't bind to the service!!!");
                 }
+            } else if (D) {
+                Log.d (TAG, "need not to bind service");
             }
 
             if (D) {
@@ -207,6 +209,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                         }
                     }
                 } else {
+                    Log.d (TAG, "loop::binder=" + binder);
                     try {
                         Thread.sleep (10);
                     } catch (InterruptedException ex) {
