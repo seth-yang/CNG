@@ -7,4 +7,5 @@ public interface Keys {
     String SAVED_MAC = "saved.mac";
     String APP_UUID = "app.uuid";
     String APP_VERSION = "app.version";
+    String CLOUD_URL = "url.cloud";
 }

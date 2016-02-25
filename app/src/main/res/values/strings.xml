@@ -81,6 +81,10 @@
     <string name="title_connecting">正在连接蓝牙设备，请稍候…</string>
     <string name="title_temperature">温度(&#176;C)</string>
     <string name="title_humidity">湿度(%)</string>
+    <string name="title_starting">正在启动应用程序…</string>
+    <string name="title_first_run">正在为首次启动应用程序检查数据…</string>
+    <string name="title_fetch_from_cloud">正在从云服务器下载数据…</string>
+    <string name="title_start_service">正在启动后台服务…</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
 

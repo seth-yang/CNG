@@ -42,4 +42,7 @@
         <item name="android:gravity">left|center_vertical</item>
         <item name="android:padding">@dimen/form_title_margin</item>
     </style>
+    <style name="splash_label" parent="form_label">
+        <item name="android:paddingLeft">@dimen/form_title_margin</item>
+    </style>
 </resources>

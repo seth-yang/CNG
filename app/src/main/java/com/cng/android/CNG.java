@@ -9,9 +9,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Message;
 import android.util.Log;
 
 import com.cng.android.db.DBService;
+import com.cng.android.service.StateMonitorService;
+import com.cng.android.util.IMessageHandler;
 import com.cng.android.util.Keys;
 
 import java.io.IOException;
@@ -22,7 +25,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by game on 2016/2/20
  */
-public class CNG extends Application implements Runnable{
+public class CNG extends Application implements Runnable, IMessageHandler {
     private static final ExecutorService service = Executors.newCachedThreadPool ();
     private static CNG instance;
 
@@ -94,21 +97,18 @@ public class CNG extends Application implements Runnable{
     @Override
     public void run () {
         DBService.init (this);
+/*
         if (!DBService.exist (Keys.APP_VERSION)) {
-            InputStream in = null;
-            try {
-                in = getAssets ().open ("default-config.sql");
-                DBService.execute (in);
-            } catch (IOException ex) {
-                Log.e (TAG, ex.getMessage (), ex);
-                throw new RuntimeException (ex);
-            } finally {
-                if (in != null) try {
-                    in.close ();
-                } catch (IOException ex) {
-                    Log.w (TAG, ex.getMessage (), ex);
-                }
-            }
+
         }
+*/
+
+
+    }
+
+    @Override
+    public void handleMessage (Message message) {
+        Intent intent = new Intent (this, StateMonitorService.class);
+        startService (intent);
     }
 }
