@@ -13,7 +13,7 @@ import android.util.Log;
 
 import com.cng.android.CNG;
 import com.cng.android.R;
-import com.cng.android.activity.MainActivity;
+import com.cng.android.activity.DashboardActivity;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.Transformer;
@@ -70,7 +70,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         binder = new MonitorServiceBinder (this);
         discover = new BluetoothDiscover (this, this);
 
-        Intent target = new Intent (this, MainActivity.class);
+        Intent target = new Intent (this, DashboardActivity.class);
         target.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pi = PendingIntent.getActivity (this, 2, target, 0);
         Notification notification = new Notification.Builder (this)

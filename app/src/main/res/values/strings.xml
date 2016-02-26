@@ -86,6 +86,7 @@
     <string name="title_fetch_from_cloud">正在从云服务器下载数据…</string>
     <string name="title_start_service">正在启动后台服务…</string>
     <string name="title_error">错误</string>
+    <string name="title_activity_dashboard">仪表盘</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
 

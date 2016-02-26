@@ -46,6 +46,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     private TextView txtTitle;
 
     private String label;
+    private int step = 0;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -54,9 +55,20 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         handler = new HandlerDelegate (this);
 
         txtTitle = (TextView) findViewById (R.id.title);
-        if (D)
+        if (D) {
+            Log.d (TAG, "++++++++++++++++++++++++++++++ [" + TAG + "] Create ++++++++++++++++++");
             Log.d (TAG, "checking for network ");
+        }
         CNG.checkAndSetupNetwork (this);
+
+        if (savedInstanceState != null) {
+            if (D)
+                Log.d (TAG, "Trying to restore saved state");
+
+            step = savedInstanceState.getInt ("step", 0);
+            if (D)
+                Log.d (TAG, "Restored step: " + step);
+        }
         if (D)
             Log.d (TAG, "on create");
     }
@@ -72,7 +84,18 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
             txtTitle.setText (label);
         }
 
-        CNG.runInNonUIThread (this);
+        if (step <= 0)
+            CNG.runInNonUIThread (this);
+    }
+
+    @Override
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState (outState);
+        if (step > 0) {
+            if (D)
+                Log.d (TAG, "The step is not zero, backup it.");
+            outState.putInt ("step", step);
+        }
     }
 
     @Override
@@ -86,7 +109,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     public void handleMessage (Message message) {
         switch (message.what) {
             case SHOW_MAIN_ACTIVITY :
-                goActivity (MainActivity.class, true);
+                goActivity (DashboardActivity.class, true);
                 break;
             case SHOW_BLUETOOTH_SETTING :
                 Intent intent = new Intent (this, ShowBTDeviceActivity.class);
@@ -114,21 +137,37 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
 
         try {
             if (D)
-                Log.d (TAG, "init the database.");
-            DBService.init (this);
-
+                Log.d (TAG, "+++++++++++++++++ [" + TAG + "] Running in NON_UI Thread ++++++++++++++++");
             // step 0: check app version and import the data from assets if necessary.
-            checkAndInitSettings ();
+            if (step <= 0) {
+                if (D)
+                    Log.d (TAG, "init the database.");
+                DBService.init (this);
+                checkAndInitSettings ();
+            } else if (D) {
+                Log.d (TAG, "skip step 0: checking init settings.");
+            }
 
             // step 1: check app uuid and fetch it from the cloud server if necessary.
-            checkAndFetchUUID ();
+            if (step <= 1)
+                checkAndFetchUUID ();
+            else if (D)
+                Log.d (TAG, "skip step 1: check uuid.");
 
             // step 2: check update
-            checkUpdate ();
+            if (step <= 2)
+                checkUpdate ();
+            else if (D)
+                Log.d (TAG, "skip step 2: check update.");
 
             // step 3: check matched bluetooth device and matches it if necessary.
-            checkAndMatchesDevice ();
+            if (step <= 3)
+                checkAndMatchesDevice ();
+            else if (D)
+                Log.d (TAG, "skip step 3: check saved mac.");
 
+            if (D)
+                Log.d (TAG, ">>>>>>>>>> check for saved mac <<<<<<<<<<");
             if (DBService.exist (Keys.SAVED_MAC)) {
                 // step 4: start the monitor service
                 if (D)
@@ -197,6 +236,8 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         } else if (D) {
             Log.d (TAG, "The app version is set.");
         }
+
+        step ++;
     }
 
     private void checkAndFetchUUID () throws IOException {
@@ -205,11 +246,6 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         if (!DBService.exist (Keys.APP_UUID)) {
             if (D)
                 Log.d (TAG, "The app uuid is not set. fetch it from cloud server");
-
-/*
-            label = getString (R.string.title_fetch_from_cloud);
-            handler.sendEmptyMessage (SET_LABEL);
-*/
 
             SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
             if (item != null) {
@@ -238,6 +274,8 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         } else if (D) {
             Log.d (TAG, "This device has registered.");
         }
+
+        step ++;
     }
 
     private void checkAndMatchesDevice () throws InterruptedException {
@@ -248,6 +286,8 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
                 Log.d (TAG, "The bluetooth device is not matched. open the setting activity");
             label = getString (R.string.title_connecting);
             handler.sendEmptyMessage (SHOW_BLUETOOTH_SETTING);
+
+            step ++;
 
             if (D)
                 Log.d (TAG, "Waiting for user select the device.");
@@ -267,6 +307,8 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         // todo: update apk and|or data from the cloud server
         if (D)
             Log.d (TAG, "check update done.");
+
+        step ++;
     }
 
     private String getMac () throws SocketException {

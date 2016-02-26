@@ -48,7 +48,7 @@ public class BluetoothDeviceListAdapter  extends BaseAdapter {
     public View getView (int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = LayoutInflater.from (context).inflate (R.layout.list_item, null);
+            convertView = LayoutInflater.from (context).inflate (R.layout.bluetooth_device_list_item, null);
             holder = new ViewHolder ();
             holder.name = (TextView) convertView.findViewById (R.id.name);
             holder.mac = (TextView) convertView.findViewById (R.id.mac);

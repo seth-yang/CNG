@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.cng.android.activity.DashboardActivity"
+    android:orientation="horizontal">
+    <com.cng.android.ui.DashboardView
+        android:id="@+id/temperature"
+        android:layout_weight="1"
+        android:layout_width="0sp"
+        android:layout_height="match_parent"/>
+    <com.cng.android.ui.DashboardView
+        android:id="@+id/humidity"
+        android:layout_weight="1"
+        android:layout_width="0sp"
+        android:layout_height="match_parent"/>
+</LinearLayout>
