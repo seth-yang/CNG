@@ -31,7 +31,7 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     private static final String TAG = ShowBTDeviceActivity.class.getSimpleName ();
 
     private static final int LOCAL_STATE_SAVE_MAC = 0;
-    private static final int RETURN   = 1;
+    private static final int RETURN               = 1;
 
     private Handler handler;
     private BluetoothDeviceListAdapter adapter;
@@ -71,6 +71,7 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
     public void onBackPressed () {
         setResult (CNG.RESULT_CODE_CANCEL);
         super.onBackPressed ();
+        finish ();
     }
 
     @Override
@@ -111,6 +112,7 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
         bundle.putParcelable ("device", device);
         localMessage.what = LOCAL_STATE_SAVE_MAC;
         localMessage.setData (bundle);
+        setResult (Keys.RESULT_CODE_OK);
         CNG.runInNonUIThread (this);
     }
 

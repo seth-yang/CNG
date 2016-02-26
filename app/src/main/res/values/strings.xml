@@ -85,6 +85,7 @@
     <string name="title_first_run">正在为首次启动应用程序检查数据…</string>
     <string name="title_fetch_from_cloud">正在从云服务器下载数据…</string>
     <string name="title_start_service">正在启动后台服务…</string>
+    <string name="title_error">错误</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
 
@@ -99,4 +100,9 @@
     <string name="no_network">没有可用的网络</string>
     <string name="setup_network_prompt">是否对网络进行设置?</string>
     <string name="tip_confirm_exit">再次按下回退键退出程序</string>
+
+    <string name="err_network_error">网络连接错误</string>
+    <string name="err_register_fail">无法在云服务器上注册设备</string>
+    <string name="err_init_db_fail">初始化数据库失败</string>
+    <string name="err_internal">未知错误</string>
 </resources>

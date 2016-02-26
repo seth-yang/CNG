@@ -29,16 +29,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.util.UUID;
+//import java.util.UUID;
 
 import static com.cng.android.CNG.D;
 
 public class StateMonitorService extends IntentService implements IBluetoothListener {
 //    public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
-    public static final UUID SPP_UUID = UUID.fromString ("a60f35f0-b93a-11de-8a39-08002009c666");
+//    public static final UUID SPP_UUID = UUID.fromString ("a60f35f0-b93a-11de-8a39-08002009c666");
 
     private static final String TAG = StateMonitorService.class.getSimpleName ();
     private static final int STATE_START_MAIN_ACTIVITY = 0;
+    private static final Object locker = new byte [0];
+
+    private static boolean running = false;
 
     private IBinder binder;
     private BluetoothDevice device;
@@ -89,27 +92,43 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             Log.d (TAG, "handle intent");
         }
 
+        synchronized (locker) {
+            if (running) {
+                if (D)
+                    Log.d (TAG, "There's another instance is running, do nothing");
+                return;
+            }
+
+            running = true;
+        }
+
         if (D)
             Log.d (TAG, "first time in the service, discovery it");
 
-        SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
-        if (item != null) {
-            savedMac = (String) item.getValue ();
-            if (D)
-                Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
+        try {
+            SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
+            if (item != null) {
+                savedMac = (String) item.getValue ();
+                if (D)
+                    Log.d (TAG, "saved mac is: " + savedMac + ", starting to discover it...");
 
-            discover.discovery ();
-            synchronized (SPP_UUID) {
-                try {
-                    if (D)
-                        Log.d (TAG, "Waiting for connect to bluetooth device ...");
-                    SPP_UUID.wait ();
-                } catch (InterruptedException e) {
-                    e.printStackTrace ();
+                discover.discovery ();
+                synchronized (locker) {
+                    try {
+                        if (D)
+                            Log.d (TAG, "Waiting for connect to bluetooth device ...");
+                        locker.wait ();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace ();
+                    }
                 }
-            }
 
-            connect ();
+                connect ();
+            }
+        } finally {
+            synchronized (locker) {
+                running = false;
+            }
         }
     }
 
@@ -128,8 +147,8 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         if (D)
             Log.d (TAG, "find BT device = " + device);
         Log.d (TAG, "Current Thread = " + Thread.currentThread ().getName ());
-        if (device.getAddress ().equals (savedMac)) synchronized (SPP_UUID) {
-            SPP_UUID.notifyAll ();
+        if (device.getAddress ().equals (savedMac)) synchronized (locker) {
+            locker.notifyAll ();
         }
     }
 
@@ -203,7 +222,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                         Log.d (TAG, "Got a message: " + line);
                     try {
                         Transformer trans = g.fromJson (line.trim (), Transformer.class);
-                        synchronized (SPP_UUID) {
+                        synchronized (locker) {
                             data = trans;
                         }
                     } catch (Exception ex) {

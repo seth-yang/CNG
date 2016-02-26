@@ -1,6 +1,8 @@
 package com.cng.android.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +11,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.cng.android.CNG;
+import com.cng.android.CNGException;
 import com.cng.android.R;
 import com.cng.android.data.RegisterResult;
 import com.cng.android.data.Result;
@@ -23,25 +26,26 @@ import com.cng.android.util.NetworkUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.List;
 
 import static com.cng.android.CNG.D;
 
 public class SplashActivity extends Activity implements IMessageHandler, Runnable {
-    private static final String TAG = "SplashActivity";
-    private static final int SHOW_MAIN_ACTIVITY = 0;
-    private static final int SHOW_BLUETOOTH_SETTING = 1;
-    private static final int SET_LABEL = 2;
-    private static final int START_SERVICE = 3;
+    private static final Object locker                 = new byte[0];
+    private static final String TAG                    = "SplashActivity";
+    private static final String MESSAGE_ID             = "com.cng.android.SplashActivity.MESSAGE_ID";
+    private static final int    SHOW_MAIN_ACTIVITY     = 0;
+    private static final int    SHOW_BLUETOOTH_SETTING = 1;
+    private static final int    SET_LABEL              = 2;
+    private static final int    START_SERVICE          = 3;
+    private static final int    SHOW_ERROR_DIALOG      = 4;
 
     private Handler handler;
-
     private TextView txtTitle;
 
     private String label;
-    private int step = 0;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -50,13 +54,6 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         handler = new HandlerDelegate (this);
 
         txtTitle = (TextView) findViewById (R.id.title);
-        if (savedInstanceState != null) {
-            if (D)
-                Log.d (TAG, "restore all state from bundle...");
-            label = savedInstanceState.getString ("label");
-            step = savedInstanceState.getInt ("step", 0);
-        }
-
         if (D)
             Log.d (TAG, "checking for network ");
         CNG.checkAndSetupNetwork (this);
@@ -79,23 +76,10 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     }
 
     @Override
-    protected void onSaveInstanceState (Bundle outState) {
-        super.onSaveInstanceState (outState);
-        if (D)
-            Log.d (TAG, "trying to save local variables");
-        if (label != null) {
-            if (D)
-                Log.d (TAG, "saving label: " + label);
-            outState.putString ("label", label);
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+        synchronized (locker) {
+            locker.notifyAll ();
         }
-
-        if (step > 0) {
-            if (D)
-                Log.d (TAG, "saving step: " + step);
-            outState.putInt ("step", step);
-        }
-        if (D)
-            Log.d (TAG, "save done.");
     }
 
     @Override
@@ -105,13 +89,19 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
                 goActivity (MainActivity.class, true);
                 break;
             case SHOW_BLUETOOTH_SETTING :
-                goActivity (ShowBTDeviceActivity.class, false);
+                Intent intent = new Intent (this, ShowBTDeviceActivity.class);
+                startActivityForResult (intent, SHOW_BLUETOOTH_SETTING);
                 break;
             case SET_LABEL :
                 txtTitle.setText (label);
                 break;
             case START_SERVICE :
                 startService ();
+                break;
+            case SHOW_ERROR_DIALOG :
+                Bundle bundle = message.getData ();
+                int messageId = bundle.getInt (MESSAGE_ID);
+                showErrorDialog (messageId);
                 break;
         }
     }
@@ -120,6 +110,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     public void run () {
         Message message = new Message ();
         Bundle bundle = new Bundle (1);
+        message.setData (bundle);
 
         try {
             if (D)
@@ -138,14 +129,33 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
             // step 3: check matched bluetooth device and matches it if necessary.
             checkAndMatchesDevice ();
 
-            // step 4: start the monitor service
-            handler.sendEmptyMessage (START_SERVICE);
-            Thread.sleep (1000); // waiting for the service start.
+            if (DBService.exist (Keys.SAVED_MAC)) {
+                // step 4: start the monitor service
+                if (D)
+                    Log.d (TAG, "Preparing to start background service to connect to the bluetooth device");
+                handler.sendEmptyMessage (START_SERVICE);
+                Thread.sleep (1000); // waiting for the service start.
 
-            // step 5: now, we can go to the main activity
-            handler.sendEmptyMessage (SHOW_MAIN_ACTIVITY);
+                // step 5: now, we can go to the main activity
+                if (D)
+                    Log.d (TAG, "Preparing to open main activity.");
+                handler.sendEmptyMessage (SHOW_MAIN_ACTIVITY);
+            } else {
+                message.what = SHOW_ERROR_DIALOG;
+                bundle.putInt (MESSAGE_ID, R.string.prompt_device_not_found);
+                handler.sendMessage (message);
+            }
         } catch (Exception ex) {
             Log.e (TAG, ex.getMessage (), ex);
+            message.what = SHOW_ERROR_DIALOG;
+            if (ex instanceof CNGException) {
+                bundle.putInt (MESSAGE_ID, ((CNGException) ex).getResourceId ());
+            } else if (ex instanceof IOException) {
+                bundle.putInt (MESSAGE_ID, R.string.err_network_error);
+            } else {
+                bundle.putInt (MESSAGE_ID, R.string.err_internal);
+            }
+            handler.sendMessage (message);
         }
     }
 
@@ -161,7 +171,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         startService (intent);
     }
 
-    private void checkAndInitSettings () throws IOException {
+    private void checkAndInitSettings () {
         if (D)
             Log.d (TAG, "checking for app version ...");
         if (!DBService.exist (Keys.APP_VERSION)) {
@@ -174,6 +184,9 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
             try {
                 in = getAssets ().open ("default-config.sql");
                 DBService.execute (in);
+            } catch (IOException ex) {
+                Log.w (TAG, ex.getMessage (), ex);
+                throw new CNGException (ex.getMessage (), R.string.err_init_db_fail);
             } finally {
                 if (in != null) try {
                     in.close ();
@@ -193,27 +206,41 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
             if (D)
                 Log.d (TAG, "The app uuid is not set. fetch it from cloud server");
 
+/*
             label = getString (R.string.title_fetch_from_cloud);
             handler.sendEmptyMessage (SET_LABEL);
+*/
 
             SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
             if (item != null) {
-                String url = (String) item.getValue ();
+                String url = item.getValue () + "register";
                 if (D) {
                     Log.d (TAG, "The cloud url is: " + item.getValue ());
                 }
                 String mac = getMac ();
-                RegisterResult result = HttpUtil.post (url, mac, RegisterResult.class);
-                if (result.getState () != Result.State.ok) {
+                String request = "{\"mac\":\"" + mac + "\"}";
+                RegisterResult result = HttpUtil.post (url, request, RegisterResult.class);
+                if (result == null || result.getState () != Result.State.ok) {
                     if (D)
-                        Log.d (TAG, "fetch uuid from cloud server fail.");
-                    throw new IOException ("fetch uuid from cloud server fail.");
+                        Log.d (TAG, "call cloud server fail");
+                    throw new CNGException ("fetch uuid from cloud server fail.", R.string.err_register_fail);
+                } else {
+                    item = new SetupItem (false, SetupItem.Type.Text);
+                    item.setName (Keys.APP_UUID);
+                    item.setValue (result.getUserData ().getId ());
+                    item.setVisible (true);
+                    item.setChinese (getString (R.string.label_app_uuid));
+                    DBService.saveSetupItem (item);
+                    if (D)
+                        Log.d (TAG, "save the app uuid as: " + result.getUserData ().getId ());
                 }
             }
+        } else if (D) {
+            Log.d (TAG, "This device has registered.");
         }
     }
 
-    private void checkAndMatchesDevice () {
+    private void checkAndMatchesDevice () throws InterruptedException {
         if (D)
             Log.d (TAG, "checking for matched bluetooth device.");
         if (!DBService.exist (Keys.SAVED_MAC)) {
@@ -221,6 +248,16 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
                 Log.d (TAG, "The bluetooth device is not matched. open the setting activity");
             label = getString (R.string.title_connecting);
             handler.sendEmptyMessage (SHOW_BLUETOOTH_SETTING);
+
+            if (D)
+                Log.d (TAG, "Waiting for user select the device.");
+            synchronized (locker) {
+                locker.wait ();
+            }
+            if (D)
+                Log.d (TAG, "return from ShowBluetoothActivity.");
+        } else if (D) {
+            Log.d (TAG, "The bluetooth device is matched, skip this step.");
         }
     }
 
@@ -233,13 +270,13 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     }
 
     private String getMac () throws SocketException {
-        List<InetAddress> list = NetworkUtil.getNetworkInterface ();
+        List<NetworkInterface> list = NetworkUtil.getNetworkInterfaces ();
         byte[] mac;
         if (list != null && !list.isEmpty ()) {
-            InetAddress address = list.get (0);
+            NetworkInterface address = list.get (0);
             if (D)
                 Log.d (TAG, "get the network interface: " + address);
-            mac = address.getAddress ();
+            mac = address.getHardwareAddress ();
         } else {
             if (D)
                 Log.d (TAG, "Can't get network interface, generate a random one.");
@@ -257,5 +294,15 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
         if (D)
             Log.d (TAG, "The network interface mac is: " + builder);
         return builder.toString ();
+    }
+
+    private void showErrorDialog (int messageId) {
+        new AlertDialog.Builder (this).setPositiveButton (getString (R.string.btn_ok), new DialogInterface.OnClickListener () {
+            @Override
+            public void onClick (DialogInterface dialogInterface, int i) {
+                finish ();
+            }
+        }).setTitle (getString (R.string.title_error))
+            .setMessage (getString (messageId)).show ();
     }
 }

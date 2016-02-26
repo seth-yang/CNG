@@ -42,7 +42,7 @@ public class HttpUtil {
 
     static {
         SchemeRegistry registry = new SchemeRegistry ();
-        registry.register (new Scheme ("http", PlainSocketFactory.getSocketFactory (), 80));
+        registry.register (new Scheme ("http", PlainSocketFactory.getSocketFactory (), 8080));
         registry.register (new Scheme ("https", SSLSocketFactory.getSocketFactory (), 443));
         params = new BasicHttpParams ();
         params.setParameter (CoreConnectionPNames.CONNECTION_TIMEOUT, 30000);

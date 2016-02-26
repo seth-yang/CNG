@@ -8,4 +8,6 @@ public interface Keys {
     String APP_UUID = "app.uuid";
     String APP_VERSION = "app.version";
     String CLOUD_URL = "url.cloud";
+
+    int RESULT_CODE_OK = 0;
 }
