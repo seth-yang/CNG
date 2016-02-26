@@ -43,11 +43,6 @@
             android:name=".activity.ShowBTDeviceActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"/>
-        <activity
-            android:name=".activity.TestActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape">
-        </activity>
 
         <service
             android:name=".service.BluetoothReconnectService"

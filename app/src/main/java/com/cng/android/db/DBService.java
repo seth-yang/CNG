@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.cng.android.data.SetupItem;
+import com.cng.android.data.Transformer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -211,6 +212,22 @@ public class DBService {
         } finally {
             if (cursor != null)
                 cursor.close ();
+        }
+    }
+
+    public static void saveData (Collection<Transformer> data) {
+        try {
+            db.beginTransaction ();
+            Object[] params = new Object[4];
+            for (Transformer transformer : data) {
+                params [0] = System.currentTimeMillis ();
+                params [1] = transformer.temperature;
+                params [2] = transformer.humidity;
+                db.execSQL (DBSchema.SensorData.SQL_INSTALL, params);
+            }
+            db.setTransactionSuccessful ();
+        } finally {
+            db.endTransaction ();
         }
     }
 

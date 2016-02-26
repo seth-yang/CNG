@@ -4,15 +4,15 @@ package com.cng.android.db;
  * Created by seth.yang on 2016/2/23
  */
 public interface DBSchema {
-    class Config {
-        public static final String TABLE_NAME = "conf";
-        public static final String
+    interface Config {
+        String TABLE_NAME = "conf";
+        String
                 NAME = "_name", VALUE = "_value", CHINESE = "_chinese",
                 TYPE = "_type", EDITABLE = "_editable", VISIBLE = "_visible";
-        public static final String[] ALL_COLUMNS = {
+        String[] ALL_COLUMNS = {
                 NAME, CHINESE, VALUE, TYPE, EDITABLE, VISIBLE
         };
-        public static final String DDL_CREATE =
+        String DDL_CREATE =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " ( " +
                 NAME + " VARCHAR(64) NOT NULL PRIMARY KEY, " +
                 CHINESE  + " VARCHAR(256) NOT NULL, " +
@@ -20,15 +20,33 @@ public interface DBSchema {
                 TYPE + " VARCHAR(16), " +
                 EDITABLE + " VARCHAR(8), " +
                 VISIBLE + " VARCHAR(8))";
-        public static final String SQL_INSERT =
+        String SQL_INSERT =
                 "INSERT INTO " + TABLE_NAME + "(" +
                 NAME + ", " + CHINESE + ", " + VALUE + ", " +
                 TYPE + ", " + EDITABLE + ", " + VISIBLE + ") " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
-        public static final String SQL_UPDATE =
+        String SQL_UPDATE =
                 "UPDATE " + TABLE_NAME + " SET " + VALUE + " = ? " +
                 "WHERE " + NAME + " = ?";
-        public static final String SQL_DELETE =
+        String SQL_DELETE =
                 "DELETE FROM " + TABLE_NAME + " WHERE " + NAME + " = ?";
+    }
+
+    interface SensorData {
+        String TABLE_NAME = "_sensor_data";
+        String TIMESTAMP = "_timestamp", TEMPERATURE = "_temp",
+                HUMIDITY = "_humidity", SMOKE = "_smoke";
+        String[] ALL_COLUMNS = { TIMESTAMP, TEMPERATURE, HUMIDITY, SMOKE};
+        String DDL_CREATE = "" +
+                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                TIMESTAMP + " BIGINT NOT NULL PRIMARY KEY, " +
+                TEMPERATURE + " FLOAT, " +
+                HUMIDITY + " FLOAT, " +
+                SMOKE  + " FLOAT)";
+        String SQL_INSTALL =
+                "INSERT INTO " + TABLE_NAME + "(" +
+                TIMESTAMP + ", " + TEMPERATURE + ", " + HUMIDITY + ", " +
+                SMOKE + ") VALUES (?, ?, ?, ?)";
+        String SQL_CLEAR = "TRUNCATE TABLE " + TABLE_NAME;
     }
 }

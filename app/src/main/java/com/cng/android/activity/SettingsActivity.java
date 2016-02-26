@@ -1,10 +1,12 @@
 package com.cng.android.activity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -52,12 +54,24 @@ public class SettingsActivity extends Activity
 
         localMessage = new Message ();
         localMessage.what = LOCAL_STATE_FETCH_DATA;
+
+        ActionBar bar = getActionBar ();
+        if (bar != null) {
+            bar.show ();
+            bar.setHomeButtonEnabled (true);
+        }
     }
 
     @Override
     protected void onResume () {
         super.onResume ();
         CNG.runInNonUIThread (this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu (Menu menu) {
+        return true;
+//        return super.onCreateOptionsMenu (menu);
     }
 
     @Override

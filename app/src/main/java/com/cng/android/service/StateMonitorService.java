@@ -15,6 +15,7 @@ import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
 import com.cng.android.concurrent.BluetoothWriter;
+import com.cng.android.concurrent.DataSaver;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
@@ -75,7 +76,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         PendingIntent pi = PendingIntent.getActivity (this, 2, target, 0);
         Notification notification = new Notification.Builder (this)
                 .setContentTitle (getString (R.string.app_name))
-                .setSmallIcon (R.mipmap.ic_launcher)
+                .setSmallIcon (R.drawable.dashboard)
                 .setContentIntent (pi)
                 .build ();
         startForeground (1, notification);
@@ -205,6 +206,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         if (D)
             Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
         BluetoothWriter writer = null;
+        DataSaver saver = null;
         try {
             if (connectToDevice ()) {
                 synchronized (this) {
@@ -213,6 +215,9 @@ public class StateMonitorService extends IntentService implements IBluetoothList
 
                 InputStream in = socket.getInputStream ();
                 writer = new BluetoothWriter ("BTHeartbeat", socket.getOutputStream ());
+
+                saver = new DataSaver ();
+
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
                 CNG.runInNonUIThread (writer);
                 Gson g = new GsonBuilder ().create ();
@@ -243,6 +248,9 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             }
             if (writer != null) {
                 writer.shutdown ();
+            }
+            if (saver != null) {
+                saver.cancel (true);
             }
         }
     }
