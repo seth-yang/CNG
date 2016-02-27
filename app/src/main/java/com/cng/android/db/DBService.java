@@ -6,7 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.cng.android.data.EnvData;
+import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
+import com.cng.android.util.DataUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.cng.android.CNG.D;
 /**
@@ -23,8 +26,6 @@ import static com.cng.android.CNG.D;
 public class DBService {
     private static SQLiteDatabase db;
 
-    private static final String SAVED_BT_MAC = "saved.bt.mac";
-    private static final String QUEUE_CAPACITY = "queue.capacity";
     private static final String TAG = "DBService";
 
     public static void init (Context context) {
@@ -215,6 +216,31 @@ public class DBService {
         }
     }
 
+    public static void saveData (List<ExchangeData> data) {
+        Map<String, Object> map = DataUtil.toMap (data);
+        try {
+            db.beginTransaction ();
+            @SuppressWarnings ("unchecked")
+            List<EnvData> dataList = (List<EnvData>) map.get ("D");
+            Object[] params = new Object[4];
+            for (EnvData e : dataList) {
+                params [0] = e.timestamp;
+                params [1] = e.temperature;
+                params [2] = e.humidity;
+                params [3] = e.smoke;
+                db.execSQL (DBSchema.SensorData.SQL_INSERT, params);
+            }
+            db.setTransactionSuccessful ();
+        } finally {
+            db.endTransaction ();
+        }
+    }
+
+/*
+    public static void saveData (Collection<Event> data) {
+
+    }
+
     public static void saveData (Collection<EnvData> data) {
         try {
             db.beginTransaction ();
@@ -223,13 +249,14 @@ public class DBService {
                 params [0] = System.currentTimeMillis ();
                 params [1] = transformer.temperature;
                 params [2] = transformer.humidity;
-                db.execSQL (DBSchema.SensorData.SQL_INSTALL, params);
+                db.execSQL (DBSchema.SensorData.SQL_INSERT, params);
             }
             db.setTransactionSuccessful ();
         } finally {
             db.endTransaction ();
         }
     }
+*/
 
     private static SetupItem buildItem (Cursor cursor) {
         SetupItem item = new SetupItem ();

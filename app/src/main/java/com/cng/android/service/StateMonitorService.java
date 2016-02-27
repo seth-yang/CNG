@@ -16,6 +16,7 @@ import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
+import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
@@ -226,10 +227,10 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                     if (D)
                         Log.d (TAG, "Got a message: " + line);
                     try {
-                        EnvData trans = g.fromJson (line.trim (), EnvData.class);
+                        ExchangeData trans = g.fromJson (line.trim (), ExchangeData.class);
                         saver.write (trans);
                         synchronized (locker) {
-                            data = trans;
+                            data = trans.data;
                         }
                     } catch (Exception ex) {
                         // ignore

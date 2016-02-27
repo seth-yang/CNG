@@ -18,4 +18,8 @@ public class Event {
     @Expose
     @SerializedName ("D")
     public String data;
+
+    public Event () {
+        timestamp = System.currentTimeMillis ();
+    }
 }

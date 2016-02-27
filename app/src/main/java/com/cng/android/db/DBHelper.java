@@ -23,10 +23,11 @@ class DBHelper extends SQLiteOpenHelper {
         if (CNG.D)
             Log.d (SQLiteOpenHelper.class.getSimpleName (), "preparing to create table " + DBSchema.Config.TABLE_NAME);
         db.execSQL (DBSchema.Config.DDL_CREATE);
+        db.execSQL (DBSchema.SensorData.DDL_CREATE);
+        db.execSQL (DBSchema.Event.DDL_CREATE);
     }
 
     @Override
     public void onUpgrade (SQLiteDatabase db, int oldVersion, int newVersion) {
-
     }
 }

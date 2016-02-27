@@ -43,10 +43,24 @@ public interface DBSchema {
                 TEMPERATURE + " FLOAT, " +
                 HUMIDITY + " FLOAT, " +
                 SMOKE  + " FLOAT)";
-        String SQL_INSTALL =
+        String SQL_INSERT =
                 "INSERT INTO " + TABLE_NAME + "(" +
                 TIMESTAMP + ", " + TEMPERATURE + ", " + HUMIDITY + ", " +
                 SMOKE + ") VALUES (?, ?, ?, ?)";
         String SQL_CLEAR = "TRUNCATE TABLE " + TABLE_NAME;
+    }
+
+    interface Event {
+        String TABLE_NAME = "_event";
+        String TIMESTAMP = "_timestamp", TYPE = "_type", DATA = "_data";
+        String [] ALL_COLUMNS = {TIMESTAMP, TYPE, DATA};
+        String DDL_CREATE =
+                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                TIMESTAMP + " BIGINT NOT NULL PRIMARY KEY, " +
+                TYPE + " VARCHAR(16) NOT NULL, " +
+                DATA + " TEXT)";
+        String SQL_INSERT =
+                "INSERT INTO " + TABLE_NAME + " (" + TIMESTAMP + ", " + TYPE + ", " + DATA + ") " +
+                "VALUES (?, ?, ?)";
     }
 }

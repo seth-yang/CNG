@@ -3,9 +3,12 @@ package com.cng.android.concurrent;
 import android.util.Log;
 
 import com.cng.android.data.EnvData;
+import com.cng.android.data.Event;
+import com.cng.android.data.ExchangeData;
 import com.cng.android.data.Result;
 import com.cng.android.data.SetupItem;
 import com.cng.android.db.DBService;
+import com.cng.android.util.DataUtil;
 import com.cng.android.util.HttpUtil;
 import com.cng.android.util.Keys;
 import com.google.gson.Gson;
@@ -14,7 +17,10 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +37,7 @@ public class DataSaver extends CancelableThread {
     private static final Object locker = new byte[0];
 
     private BlockingQueue<Object> queue = new ArrayBlockingQueue<> (32);
-    private List<EnvData> transformers = new ArrayList<> (60);
+    private List<ExchangeData> transformers = new ArrayList<> (60);
     private long touch = System.currentTimeMillis ();
     private String url, hostId;
     private Gson g = new Gson ();
@@ -46,7 +52,7 @@ public class DataSaver extends CancelableThread {
         queue.offer (QUIT);
     }
 
-    public void write (EnvData transformer) {
+    public void write (ExchangeData transformer) {
         try {
             queue.offer (transformer, TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
@@ -63,9 +69,9 @@ public class DataSaver extends CancelableThread {
                     Log.d (TAG, "receive a quit signal. kill myself :(");
                 return;
             }
-            EnvData transformer = (EnvData) object;
+            ExchangeData transformer = (ExchangeData) object;
 
-            List<EnvData> copy = null;
+            List<ExchangeData> copy = null;
             synchronized (locker) {
                 transformers.add (transformer);
 
@@ -89,7 +95,7 @@ public class DataSaver extends CancelableThread {
         }
     }
 
-    private void uploadData (List<EnvData> data) throws IOException {
+    private void uploadData (List<ExchangeData> data) throws IOException {
         if (url == null) {
             SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
             if (item != null) {
@@ -105,26 +111,8 @@ public class DataSaver extends CancelableThread {
             }
         }
 
-/*
-        List<Map<String, Object>> list = new ArrayList<> (data.size ());
-        for (EnvData transformer : data) {
-            Map<String, Object> map = new HashMap<> ();
-            map.put ("hostId", hostId);
-            map.put ("TS", transformer.timestamp);
-            if (transformer.humidity != null) {
-                map.put ("H", transformer.humidity);
-            }
-            if (transformer.temperature != null) {
-                map.put ("T", transformer.temperature);
-            }
-            if (transformer.smoke != null) {
-                map.put ("S", transformer.smoke);
-            }
-            list.add (map);
-        }
-*/
-
-        String content = g.toJson (data);
+        Map<String, Object> map = DataUtil.toMap (data);
+        String content = g.toJson (map);
         Result<Object> result = HttpUtil.post (url, content, type);
         if (result.getState () != Result.State.ok) {
             throw new IOException ("upload data fail");
