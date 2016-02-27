@@ -9,8 +9,8 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.cng.android.data.EnvData;
 import com.cng.android.data.IDataProvider;
-import com.cng.android.data.Transformer;
 import com.cng.android.util.FixedSizeQueue;
 
 import java.text.DecimalFormat;
@@ -27,7 +27,7 @@ public class ChartView extends View {
     private TextPaint textPaint = new TextPaint ();
     private static final int LEFT = 100, BOTTOM = 100;
     private IDataProvider provider;
-    private FixedSizeQueue<Transformer> queue;
+    private FixedSizeQueue<EnvData> queue;
 
     public ChartView (Context context) {
         super (context);
@@ -52,10 +52,10 @@ public class ChartView extends View {
     @Override
     protected void onDraw (Canvas canvas) {
         if (provider != null) {
-            Transformer data = provider.getData ();
+            EnvData data = provider.getData ();
 //        if (provider != null && provider.getNodes () != null && !provider.getNodes ().isEmpty ()) {
             if (data != null) {
-                Transformer t = queue.get (queue.size () - 1);
+                EnvData t = queue.get (queue.size () - 1);
                 if (t.timestamp < data.timestamp)
                     queue.add (data);
             }
@@ -76,7 +76,7 @@ public class ChartView extends View {
     private Holder processData () {
         holder.min = queue.get (0).timestamp;
         holder.max = queue.get (queue.size () - 1).timestamp;
-        for (Transformer t : queue) {
+        for (EnvData t : queue) {
             if (t.humidity > holder.maxH) holder.maxH = t.humidity;
             if (t.humidity < holder.minH) holder.minH = t.humidity;
             if (t.temperature > holder.maxT) holder.maxT = t.temperature;
@@ -132,7 +132,7 @@ public class ChartView extends View {
         Path path = new Path ();
         LINE_PAIN.setColor (0xFF00FF00);
         int index = 0;
-        for (Transformer t : queue) {
+        for (EnvData t : queue) {
             double d = t.temperature - (holder.minT - 5);
             float y = (float) (d / delta);
             y = (float) (base * (1 - y));

@@ -1,7 +1,7 @@
 package com.cng.android.util;
 
 import com.cng.android.data.IDataProvider;
-import com.cng.android.data.Transformer;
+import com.cng.android.data.EnvData;
 
 /**
  * Created by game on 2016/2/22
@@ -9,7 +9,7 @@ import com.cng.android.data.Transformer;
 public class TestDataProvider extends Thread implements IDataProvider {
     private static final Object locker = new byte [0];
 
-    private Transformer data;
+    private EnvData data;
     private boolean running = true;
 
     public TestDataProvider () {
@@ -17,7 +17,7 @@ public class TestDataProvider extends Thread implements IDataProvider {
     }
 
     @Override
-    public Transformer getData () {
+    public EnvData getData () {
         synchronized (locker) {
             return data;
         }
@@ -28,7 +28,7 @@ public class TestDataProvider extends Thread implements IDataProvider {
         double seed = Math.random () * 150 - 25;
 
         while (running) {
-            Transformer transformer = new Transformer ();
+            EnvData transformer = new EnvData ();
             double h = Math.random () * 99 + 1, t;
 //                   t = Math.random () * 150 - 25;
             transformer.setHumidity (h);

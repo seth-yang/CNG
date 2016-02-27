@@ -12,7 +12,7 @@ import android.view.View;
 import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.data.SetupItem;
-import com.cng.android.data.Transformer;
+import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
 import com.cng.android.service.BluetoothDataProvider;
 import com.cng.android.service.StateMonitorService;
@@ -103,7 +103,7 @@ public class DashboardActivity extends Activity implements Runnable {
             Log.d (TAG, "The dashboard interval = " + interval);
         while (running) {
             if (provider.isConnected ()) {
-                Transformer data = provider.getData ();
+                EnvData data = provider.getData ();
                 if (data != null) {
                     if (data.humidity != null)
                         humidity.setValue (data.humidity);

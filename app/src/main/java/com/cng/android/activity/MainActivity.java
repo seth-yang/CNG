@@ -17,7 +17,7 @@ import android.view.View;
 
 import com.cng.android.CNG;
 import com.cng.android.R;
-import com.cng.android.data.Transformer;
+import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
 import com.cng.android.service.MonitorServiceBinder;
 import com.cng.android.service.StateMonitorService;
@@ -197,7 +197,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
                     }
 
                     while (running) {
-                        Transformer transformer = binder.getData ();
+                        EnvData transformer = binder.getData ();
                         if (transformer != null) {
                             temperature.setValue (transformer.temperature);
                             humidity.setValue (transformer.humidity);

@@ -5,8 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.cng.android.data.EnvData;
 import com.cng.android.data.SetupItem;
-import com.cng.android.data.Transformer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -215,11 +215,11 @@ public class DBService {
         }
     }
 
-    public static void saveData (Collection<Transformer> data) {
+    public static void saveData (Collection<EnvData> data) {
         try {
             db.beginTransaction ();
             Object[] params = new Object[4];
-            for (Transformer transformer : data) {
+            for (EnvData transformer : data) {
                 params [0] = System.currentTimeMillis ();
                 params [1] = transformer.temperature;
                 params [2] = transformer.humidity;

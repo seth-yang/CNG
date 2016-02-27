@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.cng.android.CNG;
 import com.cng.android.data.IDataProvider;
-import com.cng.android.data.Transformer;
+import com.cng.android.data.EnvData;
 
 /**
  * Created by game on 2016/2/27
@@ -20,7 +20,7 @@ public class BluetoothDataProvider implements IDataProvider, ServiceConnection {
     private static int count = 0;
 
     @Override
-    public Transformer getData () {
+    public EnvData getData () {
         return service == null ? null : service.getData ();
     }
 

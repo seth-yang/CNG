@@ -17,7 +17,7 @@ import com.cng.android.activity.DashboardActivity;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
 import com.cng.android.data.SetupItem;
-import com.cng.android.data.Transformer;
+import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.IBluetoothListener;
@@ -50,11 +50,11 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     private BluetoothSocket socket;
     private boolean connected;
     private String savedMac;
-    private Transformer data;
+    private EnvData data;
 
     private static int COUNT = 0;
 
-//    private FixedSizeQueue<Transformer> queue;
+//    private FixedSizeQueue<EnvData> queue;
 
     public StateMonitorService () {
         super ("StateMonitorService");
@@ -153,7 +153,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         }
     }
 
-    Transformer getData () {
+    EnvData getData () {
         return data;
     }
 
@@ -226,7 +226,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                     if (D)
                         Log.d (TAG, "Got a message: " + line);
                     try {
-                        Transformer trans = g.fromJson (line.trim (), Transformer.class);
+                        EnvData trans = g.fromJson (line.trim (), EnvData.class);
                         saver.write (trans);
                         synchronized (locker) {
                             data = trans;

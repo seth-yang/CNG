@@ -2,9 +2,9 @@ package com.cng.android.concurrent;
 
 import android.util.Log;
 
+import com.cng.android.data.EnvData;
 import com.cng.android.data.Result;
 import com.cng.android.data.SetupItem;
-import com.cng.android.data.Transformer;
 import com.cng.android.db.DBService;
 import com.cng.android.util.HttpUtil;
 import com.cng.android.util.Keys;
@@ -31,7 +31,7 @@ public class DataSaver extends CancelableThread {
     private static final Object locker = new byte[0];
 
     private BlockingQueue<Object> queue = new ArrayBlockingQueue<> (32);
-    private List<Transformer> transformers = new ArrayList<> (60);
+    private List<EnvData> transformers = new ArrayList<> (60);
     private long touch = System.currentTimeMillis ();
     private String url, hostId;
     private Gson g = new Gson ();
@@ -46,7 +46,7 @@ public class DataSaver extends CancelableThread {
         queue.offer (QUIT);
     }
 
-    public void write (Transformer transformer) {
+    public void write (EnvData transformer) {
         try {
             queue.offer (transformer, TIMEOUT, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
@@ -63,9 +63,9 @@ public class DataSaver extends CancelableThread {
                     Log.d (TAG, "receive a quit signal. kill myself :(");
                 return;
             }
-            Transformer transformer = (Transformer) object;
+            EnvData transformer = (EnvData) object;
 
-            List<Transformer> copy = null;
+            List<EnvData> copy = null;
             synchronized (locker) {
                 transformers.add (transformer);
 
@@ -80,6 +80,7 @@ public class DataSaver extends CancelableThread {
                 try {
                     uploadData (copy);
                 } catch (Exception ex) {
+                    Log.w (ex.getMessage (), ex);
                     DBService.saveData (copy);
                 }
             }
@@ -88,7 +89,7 @@ public class DataSaver extends CancelableThread {
         }
     }
 
-    private void uploadData (List<Transformer> data) throws IOException {
+    private void uploadData (List<EnvData> data) throws IOException {
         if (url == null) {
             SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
             if (item != null) {
@@ -106,7 +107,7 @@ public class DataSaver extends CancelableThread {
 
 /*
         List<Map<String, Object>> list = new ArrayList<> (data.size ());
-        for (Transformer transformer : data) {
+        for (EnvData transformer : data) {
             Map<String, Object> map = new HashMap<> ();
             map.put ("hostId", hostId);
             map.put ("TS", transformer.timestamp);

@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * Created by game on 2016/2/21
  */
-public class Transformer implements Serializable {
+public class EnvData implements Serializable {
     @Expose
     @SerializedName ("T")
     public Double temperature;
@@ -22,11 +22,11 @@ public class Transformer implements Serializable {
     @SerializedName ("TS")
     public final long timestamp;
 
-    public Transformer () {
+    public EnvData () {
         timestamp = System.currentTimeMillis ();
     }
 
-    public Transformer (Double temperature, Double humidity) {
+    public EnvData (Double temperature, Double humidity) {
         this.temperature = temperature;
         this.humidity = humidity;
         timestamp = System.currentTimeMillis ();
