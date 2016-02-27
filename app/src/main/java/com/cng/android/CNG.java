@@ -73,7 +73,7 @@ public class CNG extends Application implements Runnable, IMessageHandler {
                         }
                         activity.startActivity (intent);
                     } catch (Exception e) {
-                        Log.w ("salon", "open network settings failed, please check...");
+                        Log.w (TAG, "open network settings failed, please check...");
                         e.printStackTrace ();
                     }
                 }

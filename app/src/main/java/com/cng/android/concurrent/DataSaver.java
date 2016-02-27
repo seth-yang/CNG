@@ -17,10 +17,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +65,7 @@ public class DataSaver extends CancelableThread {
             if (object == QUIT) {
                 if (D)
                     Log.d (TAG, "receive a quit signal. kill myself :(");
+                cancel (true);
                 return;
             }
             ExchangeData transformer = (ExchangeData) object;

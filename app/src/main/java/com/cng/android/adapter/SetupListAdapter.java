@@ -74,7 +74,7 @@ public class SetupListAdapter extends BaseAdapter {
         } else
             holder = managedViews.get (position);
 
-        holder.label.setText (item.getChinese ());
+        holder.label.setText (item.getChinese () + " : ");
         try {
             if (type == SetupItem.Type.Boolean) {
                 Boolean value = (Boolean) item.getValue ();

@@ -25,7 +25,7 @@
         android:icon="@drawable/dashboard"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -59,7 +59,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </receiver>

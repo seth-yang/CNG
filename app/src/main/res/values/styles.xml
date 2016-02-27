@@ -1,8 +1,11 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme">
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
+<!--
         <item name="android:textSize">24sp</item>
+        <item name="android:background">#ffffff</item>
+-->
     </style>
 
     <style name="FullscreenTheme" parent="AppTheme">
@@ -31,12 +34,13 @@
         <item name="android:paddingRight">@dimen/activity_horizontal_margin</item>
     </style>
     <style name="setup_label" parent="form_label_right">
-        <item name="android:gravity">right|top</item>
-        <item name="android:width">160sp</item>
+        <item name="android:textSize">@dimen/list_item_font_size</item>
+        <item name="android:paddingRight">@dimen/list_item_horizontal_padding</item>
+        <item name="android:paddingTop">@dimen/list_item_vertical_padding</item>
+        <item name="android:paddingBottom">@dimen/list_item_vertical_padding</item>
     </style>
-    <style name="setup_item" parent="form_label">
-        <item name="android:gravity">left|top</item>
-        <item name="android:textSize">@dimen/form_label_font_size</item>
+    <style name="setup_item" parent="setup_label">
+        <item name="android:gravity">left|center_vertical</item>
     </style>
     <style name="dialog_title" parent="form_label">
         <item name="android:gravity">left|center_vertical</item>

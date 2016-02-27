@@ -6,7 +6,9 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -20,6 +22,8 @@ import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
+import com.cng.android.receiver.BroadcastReceiverDelegate;
+import com.cng.android.receiver.IBroadcastHandler;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.IBluetoothListener;
 import com.cng.android.util.Keys;
@@ -35,7 +39,8 @@ import java.lang.reflect.Method;
 
 import static com.cng.android.CNG.D;
 
-public class StateMonitorService extends IntentService implements IBluetoothListener {
+public class StateMonitorService extends IntentService
+        implements IBluetoothListener, IBroadcastHandler {
 //    public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
 //    public static final UUID SPP_UUID = UUID.fromString ("a60f35f0-b93a-11de-8a39-08002009c666");
 
@@ -46,6 +51,9 @@ public class StateMonitorService extends IntentService implements IBluetoothList
     private static boolean running = false;
 
     private IBinder binder;
+    private DataSaver saver;
+    private BroadcastReceiverDelegate receiver;
+
     private BluetoothDevice device;
     private BluetoothDiscover discover;
     private BluetoothSocket socket;
@@ -69,6 +77,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         Log.d (TAG, "++++++++++++ Monitor Service Create ++++++++++++");
         Log.d (TAG, this.toString ());
 
+        receiver = new BroadcastReceiverDelegate (this);
         binder = new MonitorServiceBinder (this);
         discover = new BluetoothDiscover (this, this);
 
@@ -81,6 +90,9 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                 .setContentIntent (pi)
                 .build ();
         startForeground (1, notification);
+
+        IntentFilter filter = new IntentFilter (Keys.ACTION_NETWORK_STATE_CHANGED);
+        registerReceiver (receiver, filter);
     }
 
     @Override
@@ -108,6 +120,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
             Log.d (TAG, "first time in the service, discovery it");
 
         try {
+
             SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
             if (item != null) {
                 savedMac = (String) item.getValue ();
@@ -151,6 +164,19 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         Log.d (TAG, "Current Thread = " + Thread.currentThread ().getName ());
         if (device.getAddress ().equals (savedMac)) synchronized (locker) {
             locker.notifyAll ();
+        }
+    }
+
+    @Override
+    public void onReceive (Context context, Intent intent) {
+        if (CNG.isNetworkConnected (context)) {
+            if (saver != null && saver.isPaused ()) {
+                saver.proceed ();
+            }
+        } else {
+            if (saver != null && !saver.isPaused ()) {
+                saver.pause ();
+            }
         }
     }
 
@@ -207,7 +233,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
         if (D)
             Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
         BluetoothWriter writer = null;
-        DataSaver saver = null;
+
         try {
             if (connectToDevice ()) {
                 synchronized (this) {
