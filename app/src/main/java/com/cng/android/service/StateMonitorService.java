@@ -227,6 +227,7 @@ public class StateMonitorService extends IntentService implements IBluetoothList
                         Log.d (TAG, "Got a message: " + line);
                     try {
                         Transformer trans = g.fromJson (line.trim (), Transformer.class);
+                        saver.write (trans);
                         synchronized (locker) {
                             data = trans;
                         }
