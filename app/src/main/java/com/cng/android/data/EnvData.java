@@ -20,7 +20,7 @@ public class EnvData implements Serializable {
     public Double smoke;
     @Expose
     @SerializedName ("TS")
-    public final long timestamp;
+    public long timestamp;
 
     public EnvData () {
         timestamp = System.currentTimeMillis ();

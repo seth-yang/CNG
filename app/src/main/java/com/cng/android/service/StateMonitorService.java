@@ -61,13 +61,8 @@ public class StateMonitorService extends IntentService
     private String savedMac;
     private EnvData data;
 
-    private static int COUNT = 0;
-
-//    private FixedSizeQueue<EnvData> queue;
-
     public StateMonitorService () {
         super ("StateMonitorService");
-        Log.d (TAG, String.valueOf (COUNT++));
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -75,12 +70,13 @@ public class StateMonitorService extends IntentService
     public void onCreate () {
         super.onCreate ();
         Log.d (TAG, "++++++++++++ Monitor Service Create ++++++++++++");
-        Log.d (TAG, this.toString ());
 
         receiver = new BroadcastReceiverDelegate (this);
         binder = new MonitorServiceBinder (this);
         discover = new BluetoothDiscover (this, this);
 
+        if (D)
+            Log.d (TAG, "Try setting up the notification");
         Intent target = new Intent (this, DashboardActivity.class);
         target.setFlags (Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pi = PendingIntent.getActivity (this, 2, target, 0);
@@ -90,13 +86,20 @@ public class StateMonitorService extends IntentService
                 .setContentIntent (pi)
                 .build ();
         startForeground (1, notification);
-
+        if (D) {
+            Log.d (TAG, "the notification setup done.");
+            Log.d (TAG, "Try registering the broadcast receiver");
+        }
         IntentFilter filter = new IntentFilter (Keys.ACTION_NETWORK_STATE_CHANGED);
         registerReceiver (receiver, filter);
+        if (D)
+            Log.d (TAG, "The broadcast receiver register success.");
     }
 
     @Override
     public IBinder onBind (Intent intent) {
+        if (D)
+            Log.d (TAG, "someone bound to me.");
         return binder;
     }
 
@@ -120,7 +123,6 @@ public class StateMonitorService extends IntentService
             Log.d (TAG, "first time in the service, discovery it");
 
         try {
-
             SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
             if (item != null) {
                 savedMac = (String) item.getValue ();
@@ -138,7 +140,8 @@ public class StateMonitorService extends IntentService
                     }
                 }
 
-                connect ();
+                while (running)
+                    connect ();
             }
         } finally {
             synchronized (locker) {
@@ -149,6 +152,8 @@ public class StateMonitorService extends IntentService
 
     @Override
     public void onDestroy () {
+        if (receiver != null)
+            unregisterReceiver (receiver);
         super.onDestroy ();
         if (D)
             Log.d (TAG, "State Monitor Service destroyed.");
@@ -159,9 +164,11 @@ public class StateMonitorService extends IntentService
     @Override
     public void onDeviceFound (BluetoothDevice device) {
         this.device = device;
-        if (D)
+        if (D) {
             Log.d (TAG, "find BT device = " + device);
-        Log.d (TAG, "Current Thread = " + Thread.currentThread ().getName ());
+            Log.d (TAG, "Current Thread = " + Thread.currentThread ().getName ());
+        }
+
         if (device.getAddress ().equals (savedMac)) synchronized (locker) {
             locker.notifyAll ();
         }
@@ -194,6 +201,7 @@ public class StateMonitorService extends IntentService
             if (D)
                 Log.d (TAG, "Trying to connect to BT device ...");
 
+            socket = null;
             try {
                 Method m = device.getClass ().getDeclaredMethod ("createRfcommSocket", int.class);
                 socket = (BluetoothSocket) m.invoke (device, 1);
@@ -278,7 +286,9 @@ public class StateMonitorService extends IntentService
                 writer.shutdown ();
             }
             if (saver != null) {
-                saver.cancel (true);
+                DataSaver temp = saver;
+                this.saver = null;
+                temp.cancel (true);
             }
         }
     }

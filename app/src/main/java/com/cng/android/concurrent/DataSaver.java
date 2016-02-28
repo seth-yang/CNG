@@ -2,8 +2,6 @@ package com.cng.android.concurrent;
 
 import android.util.Log;
 
-import com.cng.android.data.EnvData;
-import com.cng.android.data.Event;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.Result;
 import com.cng.android.data.SetupItem;
@@ -31,7 +29,7 @@ public class DataSaver extends CancelableThread {
     private static final String TAG = "DataSaver";
     private static final int TIMEOUT = 20;
 
-    private static final Object QUIT = Void.class;
+    private static final Object QUIT = "QUIT", FLUSH_DATABASE = "FLUSH_DATABASE";
     private static final Object locker = new byte[0];
 
     private BlockingQueue<Object> queue = new ArrayBlockingQueue<> (32);
@@ -58,6 +56,14 @@ public class DataSaver extends CancelableThread {
         }
     }
 
+    public void flushDatabase () {
+        try {
+            queue.offer (FLUSH_DATABASE, TIMEOUT, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Log.w (TAG, ex.getMessage (), ex);
+        }
+    }
+
     @Override
     protected void doWork () {
         try {
@@ -66,27 +72,50 @@ public class DataSaver extends CancelableThread {
                 if (D)
                     Log.d (TAG, "receive a quit signal. kill myself :(");
                 cancel (true);
-                return;
-            }
-            ExchangeData transformer = (ExchangeData) object;
-
-            List<ExchangeData> copy = null;
-            synchronized (locker) {
-                transformers.add (transformer);
-
-                if (transformers.size () >= 60 || System.currentTimeMillis () - touch >= 60000) {
-                    touch = System.currentTimeMillis ();
-                    copy = new ArrayList<> (transformers);
-                    transformers.clear ();
+            } else if (object == FLUSH_DATABASE) {
+                if (D)
+                    Log.d (TAG, "receive a flush database signal, process it.");
+                Map<String, Object> map = DBService.getData ();
+                if (map != null && !map.isEmpty ()) {
+                    try {
+                        if (D)
+                            Log.d (TAG, "Trying to upload the saved data.");
+                        uploadData (map);
+                        if (D) {
+                            Log.d (TAG, "Upload the saved data success. now clean the local backup up.");
+                        }
+                        DBService.flushData ();
+                    } catch (IOException ex) {
+                        ex.printStackTrace ();
+                    }
                 }
-            }
+            } else if (object instanceof ExchangeData) {
+                if (D)
+                    Log.d (TAG, "receive a exchange data.");
+                ExchangeData transformer = (ExchangeData) object;
 
-            if (copy != null) {
-                try {
-                    uploadData (copy);
-                } catch (Exception ex) {
-                    Log.w (ex.getMessage (), ex);
-                    DBService.saveData (copy);
+                List<ExchangeData> copy = null;
+                synchronized (locker) {
+                    transformers.add (transformer);
+                    if (D)
+                        Log.d (TAG, "append the data into cache.");
+
+                    if (transformers.size () >= 60 || System.currentTimeMillis () - touch >= 60000) {
+                        if (D)
+                            Log.d (TAG, "the cache is full or timeout, upload them to cloud server.");
+                        touch = System.currentTimeMillis ();
+                        copy = new ArrayList<> (transformers);
+                        transformers.clear ();
+                    }
+                }
+
+                if (copy != null) {
+                    try {
+                        uploadData (copy);
+                    } catch (Exception ex) {
+                        Log.w (ex.getMessage (), ex);
+                        DBService.saveData (copy);
+                    }
                 }
             }
         } catch (InterruptedException ex) {
@@ -95,6 +124,11 @@ public class DataSaver extends CancelableThread {
     }
 
     private void uploadData (List<ExchangeData> data) throws IOException {
+        Map<String, Object> map = DataUtil.toMap (data);
+        uploadData (map);
+    }
+
+    private void uploadData (Map<String, Object> map) throws IOException {
         if (url == null) {
             SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
             if (item != null) {
@@ -110,7 +144,6 @@ public class DataSaver extends CancelableThread {
             }
         }
 
-        Map<String, Object> map = DataUtil.toMap (data);
         String content = g.toJson (map);
         Result<Object> result = HttpUtil.post (url, content, type);
         if (result.getState () != Result.State.ok) {

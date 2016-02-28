@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.cng.android.data.EnvData;
+import com.cng.android.data.Event;
+import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
 import com.cng.android.util.DataUtil;
@@ -16,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -236,6 +239,53 @@ public class DBService {
         }
     }
 
+    public static Map<String, Object> getData () {
+        Map<String, Object> map = new HashMap<> ();
+        List<EnvData> env_data = new ArrayList<> ();
+        Cursor cursor = null;
+        try {
+            cursor = db.query (
+                    DBSchema.SensorData.TABLE_NAME,
+                    DBSchema.SensorData.ALL_COLUMNS,
+                    null, null, null, null, null
+            );
+            while (cursor.moveToNext ()) {
+                env_data.add (buildSensorData (cursor));
+            }
+            if (!env_data.isEmpty ()) {
+                map.put ("D", env_data);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close ();
+            }
+        }
+
+        List<Event> events = new ArrayList<> ();
+        try {
+            cursor = db.query (
+                    DBSchema.Event.TABLE_NAME,
+                    DBSchema.Event.ALL_COLUMNS,
+                    null, null, null, null, null
+            );
+            while (cursor.moveToNext ()) {
+                events.add (buildEvent (cursor));
+            }
+            if (!events.isEmpty ())
+                map.put ("E", events);
+        } finally {
+            if (cursor != null)
+                cursor.close ();
+        }
+
+        return map;
+    }
+
+    public static void flushData () {
+        db.execSQL (DBSchema.Event.SQL_CLEAR);
+        db.execSQL (DBSchema.SensorData.SQL_CLEAR);
+    }
+
 /*
     public static void saveData (Collection<Event> data) {
 
@@ -285,5 +335,23 @@ public class DBService {
         String visible = cursor.getString (5);
         item.setVisible (Boolean.parseBoolean (visible));
         return item;
+    }
+
+    private static EnvData buildSensorData (Cursor cursor) {
+        EnvData data = new EnvData ();
+        data.timestamp = cursor.getLong (0);
+        data.temperature = cursor.getDouble (1);
+        data.humidity = cursor.getDouble (2);
+        data.smoke = cursor.getDouble (3);
+        return data;
+    }
+
+    private static Event buildEvent (Cursor cursor) {
+        Event event = new Event ();
+        event.timestamp = cursor.getLong (0);
+        String type_name = cursor.getString (1);
+        event.type = EventType.valueOf (type_name);
+        event.data = cursor.getString (2);
+        return event;
     }
 }

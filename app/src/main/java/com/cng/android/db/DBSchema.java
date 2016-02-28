@@ -62,5 +62,6 @@ public interface DBSchema {
         String SQL_INSERT =
                 "INSERT INTO " + TABLE_NAME + " (" + TIMESTAMP + ", " + TYPE + ", " + DATA + ") " +
                 "VALUES (?, ?, ?)";
+        String SQL_CLEAR = "TRUNCATE TABLE " + TABLE_NAME;
     }
 }
