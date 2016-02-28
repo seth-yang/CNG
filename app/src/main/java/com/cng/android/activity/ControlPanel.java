@@ -1,5 +1,6 @@
 package com.cng.android.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
@@ -11,9 +12,11 @@ import android.widget.GridView;
 import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.adapter.ControlGridAdapter;
+import com.cng.android.data.ArduinoCommand;
 import com.cng.android.data.ControlPanelItem;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;
+import com.cng.android.util.Keys;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +77,23 @@ public class ControlPanel extends Activity
         ControlPanelItem item = adapter.getItem (position);
         item.toggle ();
         adapter.notifyDataSetChanged ();
+
+        switch (item.getId ()) {
+            case 0 : {       // fan
+                Intent intent = new Intent (Keys.Actions.SET_ARDUINO);
+                intent.putExtra ("command", ArduinoCommand.toggle (ArduinoCommand.TARGET_FAN));
+                sendBroadcast (intent);
+                break;
+            }
+            case 1 :
+                break;
+            case 2 :
+                break;
+            case 3 :
+                break;
+            case 4 :
+                break;
+        }
     }
 
     @Override
