@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -52,6 +53,7 @@ public class StateMonitorService extends IntentService
 
     private IBinder binder;
     private DataSaver saver;
+    private BluetoothWriter writer;
     private BroadcastReceiverDelegate receiver;
 
     private BluetoothDevice device;
@@ -90,7 +92,8 @@ public class StateMonitorService extends IntentService
             Log.d (TAG, "the notification setup done.");
             Log.d (TAG, "Try registering the broadcast receiver");
         }
-        IntentFilter filter = new IntentFilter (Keys.ACTION_NETWORK_STATE_CHANGED);
+        IntentFilter filter = new IntentFilter (ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction (Keys.Actions.SET_ARDUINO);
         registerReceiver (receiver, filter);
         if (D)
             Log.d (TAG, "The broadcast receiver register success.");
@@ -154,6 +157,7 @@ public class StateMonitorService extends IntentService
     public void onDestroy () {
         if (receiver != null)
             unregisterReceiver (receiver);
+        running = false;
         super.onDestroy ();
         if (D)
             Log.d (TAG, "State Monitor Service destroyed.");
@@ -176,14 +180,14 @@ public class StateMonitorService extends IntentService
 
     @Override
     public void onReceive (Context context, Intent intent) {
-        if (CNG.isNetworkConnected (context)) {
-            if (saver != null && saver.isPaused ()) {
-                saver.proceed ();
-            }
-        } else {
-            if (saver != null && !saver.isPaused ()) {
-                saver.pause ();
-            }
+        String action = intent.getAction ();
+        switch (action) {
+            case ConnectivityManager.CONNECTIVITY_ACTION :
+                onNetworkStateChanged ();
+                break;
+            case Keys.Actions.SET_ARDUINO :
+                onWriteToArduino (intent);
+                break;
         }
     }
 
@@ -240,8 +244,6 @@ public class StateMonitorService extends IntentService
     private void connect () {
         if (D)
             Log.d (TAG, "now, we got the bluetooth device, connect to it and listen data");
-        BluetoothWriter writer = null;
-
         try {
             if (connectToDevice ()) {
                 synchronized (this) {
@@ -275,20 +277,57 @@ public class StateMonitorService extends IntentService
             Log.w (TAG, ex.getMessage (), ex);
         } finally {
             synchronized (this) {
+                if (D)
+                    Log.d (TAG, "set the flag::connected to false");
                 connected = false;
             }
+
             if (socket != null) try {
+                if (D)
+                    Log.d (TAG, "close the socket.");
                 socket.close ();
             } catch (IOException ex) {
                 Log.w (TAG, ex.getMessage (), ex);
             }
+
             if (writer != null) {
-                writer.shutdown ();
+                BluetoothWriter temp = this.writer;
+                this.writer = null;
+                temp.shutdown ();
             }
+
             if (saver != null) {
                 DataSaver temp = saver;
                 this.saver = null;
                 temp.cancel (true);
+            }
+        }
+    }
+
+    private void onNetworkStateChanged () {
+        if (CNG.isNetworkConnected (this)) {
+            if (D)
+                Log.d (TAG, "The network is active, turn the saver into ethernet mode.");
+            if (saver != null && saver.isPaused ()) {
+                saver.flushDatabase ();
+                saver.setMode (DataSaver.Mode.Ethernet);
+            }
+        } else {
+            if (D)
+                Log.d (TAG, "The network is down, turn the saver into local mode.");
+            if (saver != null && !saver.isPaused ()) {
+                saver.setMode (DataSaver.Mode.Local);
+            }
+        }
+    }
+
+    private void onWriteToArduino (Intent intent) {
+        if (D)
+            Log.d (TAG, "receive an arduino command.");
+        if (writer != null) {
+            byte[] command = intent.getByteArrayExtra ("command");
+            if (command != null) {
+                writer.write (command);
             }
         }
     }

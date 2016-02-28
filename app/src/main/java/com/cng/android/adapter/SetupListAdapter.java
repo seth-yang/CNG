@@ -2,7 +2,6 @@ package com.cng.android.adapter;
 
 import android.app.Service;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -10,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.cng.android.R;
@@ -67,6 +67,7 @@ public class SetupListAdapter extends BaseAdapter {
             } else {
                 view = inflater.inflate (R.layout.setup_item_text, null);
                 holder.value = (TextView) view.findViewById (R.id.value);
+                holder.editValue = (EditText) view.findViewById (R.id.edit_value);
             }
             holder.label = (TextView) view.findViewById (R.id.label);
             holder.root = view;
@@ -83,11 +84,18 @@ public class SetupListAdapter extends BaseAdapter {
                 Object o = item.getValue ();
                 String value = String.valueOf (o);
                 holder.value.setText (value);
+                holder.editValue.setText (value);
                 if (item.isEditable ()) {
+                    holder.value.setVisibility (View.GONE);
+                    holder.editValue.setVisibility (View.VISIBLE);
+/*
                     Drawable icon = context.getDrawable  (android.R.drawable.ic_menu_edit);
                     holder.value.setCompoundDrawables (null, null, icon, null);
+*/
                 } else {
-                    holder.value.setCompoundDrawables (null, null, null, null);
+//                    holder.value.setCompoundDrawables (null, null, null, null);
+                    holder.value.setVisibility (View.VISIBLE);
+                    holder.editValue.setVisibility (View.GONE);
                 }
             }
         } catch (Exception ex) {
@@ -105,6 +113,7 @@ public class SetupListAdapter extends BaseAdapter {
     private static class Holder {
         View root;
         TextView label, value;
+        EditText editValue;
         CheckBox checkBox;
     }
 }

@@ -26,6 +26,10 @@ import static com.cng.android.CNG.D;
  * Created by game on 2016/2/27
  */
 public class DataSaver extends CancelableThread {
+    public enum Mode {
+        Ethernet, Local
+    }
+
     private static final String TAG = "DataSaver";
     private static final int TIMEOUT = 20;
 
@@ -36,6 +40,7 @@ public class DataSaver extends CancelableThread {
     private List<ExchangeData> transformers = new ArrayList<> (60);
     private long touch = System.currentTimeMillis ();
     private String url, hostId;
+    private Mode mode = Mode.Ethernet;
     private Gson g = new Gson ();
     private Type type = new TypeToken<Result<Object>> () {}.getType ();
 
@@ -62,6 +67,14 @@ public class DataSaver extends CancelableThread {
         } catch (InterruptedException ex) {
             Log.w (TAG, ex.getMessage (), ex);
         }
+    }
+
+    public Mode getMode () {
+        return mode;
+    }
+
+    public void setMode (Mode mode) {
+        this.mode = mode;
     }
 
     @Override
@@ -110,10 +123,14 @@ public class DataSaver extends CancelableThread {
                 }
 
                 if (copy != null) {
-                    try {
-                        uploadData (copy);
-                    } catch (Exception ex) {
-                        Log.w (ex.getMessage (), ex);
+                    if (mode == Mode.Ethernet) {
+                        try {
+                            uploadData (copy);
+                        } catch (Exception ex) {
+                            Log.w (ex.getMessage (), ex);
+                            DBService.saveData (copy);
+                        }
+                    } else if (mode == Mode.Local) {
                         DBService.saveData (copy);
                     }
                 }

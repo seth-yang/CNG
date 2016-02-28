@@ -47,7 +47,7 @@ public class SettingsActivity extends Activity
         editor.setEditorListener (this);
 
         adapter = new SetupListAdapter (this);
-        listView.setOnItemClickListener (this);
+//        listView.setOnItemClickListener (this);
         listView.setAdapter (adapter);
 
         handler = new HandlerDelegate (this);

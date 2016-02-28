@@ -59,6 +59,19 @@ public class BluetoothWriter implements Runnable {
         queue.offer (command);
     }
 
+    public void write (byte[] buff) {
+        write (buff, 0, buff.length);
+    }
+
+    public void write (byte[] buff, int start, int length) {
+        if (start != 0 || length != buff.length) {
+            byte[] copy = new byte [length];
+            System.arraycopy (buff, start, copy, 0, length);
+            buff = copy;
+        }
+        queue.offer (buff);
+    }
+
     @Override
     public void run () {
         Thread.currentThread ().setName (name);

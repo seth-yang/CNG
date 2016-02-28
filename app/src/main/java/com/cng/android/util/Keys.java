@@ -15,4 +15,8 @@ public interface Keys {
     String FILTER_NETWORK_STATE_CHANGED   = "com.cng.android.filters.NETWORK_STATE_CHANGED";
 
     int RESULT_CODE_OK                    = 0;
+
+    interface Actions {
+        String SET_ARDUINO                = "com.cng.android.actions.SET_ARDUINO";
+    }
 }
