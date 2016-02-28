@@ -11,4 +11,6 @@
     <dimen name="bluetooth_device_list_item_font_size">20sp</dimen>
     <dimen name="bluetooth_device_list_item_padding">10sp</dimen>
     <dimen name="setup_item_label_width">240sp</dimen>
+    <dimen name="action_bar_horizontal_padding">10sp</dimen>
+    <dimen name="action_bar_vertical_padding">5sp</dimen>
 </resources>

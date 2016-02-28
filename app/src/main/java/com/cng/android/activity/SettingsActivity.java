@@ -43,11 +43,10 @@ public class SettingsActivity extends Activity
 
         ListView listView = (ListView) findViewById (R.id.listView);
         editor = (EditorFragment) getFragmentManager ().findFragmentById (R.id.editor);
-
         editor.setEditorListener (this);
 
         adapter = new SetupListAdapter (this);
-//        listView.setOnItemClickListener (this);
+        listView.setOnItemClickListener (this);
         listView.setAdapter (adapter);
 
         handler = new HandlerDelegate (this);

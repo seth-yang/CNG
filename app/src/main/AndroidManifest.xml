@@ -25,7 +25,7 @@
         android:icon="@drawable/dashboard"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -59,6 +59,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </receiver>
@@ -75,6 +76,10 @@
         <activity
             android:name=".activity.DashboardActivity"
             android:label="@string/title_activity_dashboard">
+        </activity>
+        <activity
+            android:name=".activity.ControlPanel"
+            android:label="@string/btn_control_panel">
         </activity>
     </application>
 

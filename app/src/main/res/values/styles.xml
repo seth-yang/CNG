@@ -2,10 +2,6 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light">
-<!--
-        <item name="android:textSize">24sp</item>
-        <item name="android:background">#ffffff</item>
--->
     </style>
 
     <style name="FullscreenTheme" parent="AppTheme">
@@ -42,11 +38,33 @@
     <style name="setup_item" parent="setup_label">
         <item name="android:gravity">left|center_vertical</item>
     </style>
-    <style name="dialog_title" parent="form_label">
+    <style name="dialog_title" parent="setup_label">
         <item name="android:gravity">left|center_vertical</item>
         <item name="android:padding">@dimen/form_title_margin</item>
+        <item name="android:textColor">#000000</item>
     </style>
     <style name="splash_label" parent="form_label">
         <item name="android:paddingLeft">@dimen/form_title_margin</item>
+    </style>
+    <style name="dialog_button" parent="AppTheme">
+        <item name="android:textSize">16sp</item>
+        <item name="android:paddingTop">5sp</item>
+        <item name="android:paddingRight">30sp</item>
+        <item name="android:paddingBottom">5sp</item>
+        <item name="android:paddingLeft">30sp</item>
+    </style>
+    <style name="action_bar_background" parent="AppTheme">
+        <item name="android:background">#dd000000</item>
+        <item name="android:paddingTop">@dimen/action_bar_vertical_padding</item>
+        <item name="android:paddingRight">@dimen/action_bar_horizontal_padding</item>
+        <item name="android:paddingBottom">@dimen/action_bar_vertical_padding</item>
+        <item name="android:paddingLeft">@dimen/action_bar_horizontal_padding</item>
+    </style>
+    <style name="action_bar_item" parent="AppTheme">
+        <item name="android:drawablePadding">10sp</item>
+        <item name="android:padding">10sp</item>
+    </style>
+    <style name="action_bar_background.black" parent="action_bar_background">
+        <item name="android:background">#000000</item>
     </style>
 </resources>

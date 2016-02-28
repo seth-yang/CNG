@@ -3,34 +3,44 @@ package com.cng.android.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.cng.android.CNG;
 import com.cng.android.R;
+import com.cng.android.concurrent.ITimeoutListener;
+import com.cng.android.concurrent.Timer;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.EnvData;
 import com.cng.android.db.DBService;
 import com.cng.android.service.BluetoothDataProvider;
 import com.cng.android.service.StateMonitorService;
 import com.cng.android.ui.DashboardView;
+import com.cng.android.util.HandlerDelegate;
+import com.cng.android.util.IMessageHandler;
 import com.cng.android.util.Keys;
 
 import java.text.DecimalFormat;
+import java.util.concurrent.TimeUnit;
 
 import static com.cng.android.CNG.D;
 
-public class DashboardActivity extends Activity implements Runnable {
+public class DashboardActivity extends Activity
+        implements Runnable, View.OnClickListener, ITimeoutListener, IMessageHandler {
     private static final String TAG = DashboardActivity.class.getSimpleName ();
+    private static final int HIDE_ACTION_BAR = 0;
 
     private DashboardView temperature, humidity;
+    private View actionBar;
+    private Timer timer;
 
     private boolean running = false, bound = false;
 
     private BluetoothDataProvider provider = new BluetoothDataProvider ();
+    private Handler handler;
 
     @Override
     protected void onCreate (Bundle savedInstanceState) {
@@ -39,6 +49,7 @@ public class DashboardActivity extends Activity implements Runnable {
         if (D)
             Log.d (TAG, "+++++++++++++++++++ [" + TAG + "] OnCreate ++++++++++++++++++++");
         guiSetup ();
+        handler = new HandlerDelegate (this);
     }
 
     @Override
@@ -59,34 +70,13 @@ public class DashboardActivity extends Activity implements Runnable {
         if (bound) {
             getApplicationContext ().unbindService (provider);
             bound = false;
+            if (D) {
+                Log.d (TAG, "The service unbound");
+            }
         }
 
         running = false;
         super.onPause ();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu (Menu menu) {
-        getMenuInflater ().inflate (R.menu.main, menu);
-        return super.onCreateOptionsMenu (menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected (MenuItem item) {
-        processMenuItem (item);
-        return super.onOptionsItemSelected (item);
-    }
-
-    @Override
-    public void onCreateContextMenu (ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getMenuInflater ().inflate (R.menu.main, menu);
-        super.onCreateContextMenu (menu, v, menuInfo);
-    }
-
-    @Override
-    public boolean onContextItemSelected (MenuItem item) {
-        processMenuItem (item);
-        return super.onContextItemSelected (item);
     }
 
     @Override
@@ -122,6 +112,46 @@ public class DashboardActivity extends Activity implements Runnable {
             Log.d (TAG, "The local thread stopped.");
     }
 
+    @Override
+    public void onTimeout () {
+        handler.sendEmptyMessage (HIDE_ACTION_BAR);
+    }
+
+    @Override
+    public void handleMessage (Message message) {
+        switch (message.what) {
+            case HIDE_ACTION_BAR :
+                if (actionBar.getVisibility () != View.GONE) {
+                    actionBar.setVisibility (View.GONE);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onClick (View v) {
+        if (v.getId () == R.id.root) {
+            toggleActionBar ();
+        } else {
+            cancelTimer ();
+            switch (v.getId ()) {
+                case R.id.bluetooth:
+                    showFindActivity ();
+                    break;
+                case R.id.config:
+                    showSettings ();
+                    break;
+                case R.id.update:
+                    break;
+                case R.id.system: {
+                    Intent intent = new Intent (this, ControlPanel.class);
+                    startActivity (intent);
+                    break;
+                }
+            }
+        }
+    }
+
     private void guiSetup () {
         temperature = (DashboardView) findViewById (R.id.temperature);
         temperature.setTitle (getString (R.string.title_temperature))
@@ -130,6 +160,13 @@ public class DashboardActivity extends Activity implements Runnable {
 
         humidity = (DashboardView) findViewById (R.id.humidity);
         humidity.setTitle (getString (R.string.title_humidity));
+
+        findViewById (R.id.root).setOnClickListener (this);
+        findViewById (R.id.bluetooth).setOnClickListener (this);
+        findViewById (R.id.system).setOnClickListener (this);
+        findViewById (R.id.update).setOnClickListener (this);
+        findViewById (R.id.config).setOnClickListener (this);
+        actionBar = findViewById (R.id.action_bar);
     }
 
     private void showFindActivity () {
@@ -150,6 +187,25 @@ public class DashboardActivity extends Activity implements Runnable {
             case R.id.menu_setting :
                 showSettings ();
                 break;
+        }
+    }
+
+    private void toggleActionBar () {
+        if (actionBar.getVisibility () == View.GONE) {
+            actionBar.setVisibility (View.VISIBLE);
+            timer = new Timer ("action_bar_timer", 5, TimeUnit.SECONDS, this);
+            timer.timing ();
+        } else {
+            actionBar.setVisibility (View.GONE);
+            cancelTimer ();
+        }
+    }
+
+    private void cancelTimer () {
+        if (this.timer != null) {
+            Timer tmp = timer;
+            timer = null;
+            tmp.cancel ();
         }
     }
 }

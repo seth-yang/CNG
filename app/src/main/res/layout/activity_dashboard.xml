@@ -1,19 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.cng.android.activity.DashboardActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.cng.android.activity.DashboardActivity"
-    android:orientation="horizontal">
-    <com.cng.android.ui.DashboardView
-        android:id="@+id/temperature"
-        android:layout_weight="1"
-        android:layout_width="0sp"
-        android:layout_height="match_parent"/>
-    <com.cng.android.ui.DashboardView
-        android:id="@+id/humidity"
-        android:layout_weight="1"
-        android:layout_width="0sp"
-        android:layout_height="match_parent"/>
-</LinearLayout>
+    android:id="@+id/root">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <com.cng.android.ui.DashboardView
+            android:id="@+id/temperature"
+            android:layout_weight="1"
+            android:layout_width="0sp"
+            android:layout_height="match_parent"/>
+        <com.cng.android.ui.DashboardView
+            android:id="@+id/humidity"
+            android:layout_weight="1"
+            android:layout_width="0sp"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
+    <LinearLayout
+        style="@style/action_bar_background"
+        android:orientation="horizontal"
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="0sp"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_bluetooth"
+            android:drawableTop="@drawable/bluetooth"
+            style="@style/action_bar_item"
+            android:id="@+id/bluetooth"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_control_panel"
+            android:drawableTop="@drawable/system"
+            style="@style/action_bar_item"
+            android:id="@+id/system"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_check_upload"
+            android:drawableTop="@drawable/downloads_library"
+            style="@style/action_bar_item"
+            android:id="@+id/update"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_system_config"
+            android:drawableTop="@drawable/configure_alt_3"
+            style="@style/action_bar_item"
+            android:id="@+id/config"/>
+    </LinearLayout>
+</FrameLayout>

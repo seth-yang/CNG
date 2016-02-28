@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.hothink.installer.activity.SettingActivity">
+    tools:context="com.cng.android.activity.SettingsActivity">
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -16,11 +16,4 @@
         android:layout_weight="1"
         android:id="@+id/value"
         style="@style/setup_item"/>
-    <EditText
-        android:inputType="text"
-        android:id="@+id/edit_value"
-        android:background="@null"
-        android:layout_weight="1"
-        android:layout_width="0sp"
-        android:layout_height="match_parent"/>
 </LinearLayout>

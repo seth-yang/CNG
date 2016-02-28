@@ -92,11 +92,20 @@
 
     <string name="label_device_address">蓝牙设备地址</string>
     <string name="label_app_uuid">设备号</string>
+    <string name="gv_remote">红外遥控器</string>
+    <string name="gv_fan">风机</string>
+    <string name="gv_ir">人体红外感应器</string>
+    <string name="gv_key">门禁</string>
+    <string name="gv_other">无所谓啦</string>
 
     <string name="btn_ok">确定</string>
     <string name="btn_cancel">取消</string>
     <string name="btn_yes">是</string>
     <string name="btn_no">否</string>
+    <string name="btn_bluetooth">蓝牙设备</string>
+    <string name="btn_control_panel">控制面板</string>
+    <string name="btn_check_upload">检查更新</string>
+    <string name="btn_system_config">系统设置</string>
 
     <string name="no_network">没有可用的网络</string>
     <string name="setup_network_prompt">是否对网络进行设置?</string>
