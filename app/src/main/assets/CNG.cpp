@@ -8,14 +8,15 @@
  */
 
 #define ONE_WIRE_BUS       2
+#define IR_LED             3             // REQUIRED.
 /**
  * When the android connect me, turn this led on
  */
-#define OK_BUS             3
+#define OK_BUS            A4
 /**
  * If the android is not connected, turn this led on
  */
-#define ERROR_BUS          4
+#define ERROR_BUS         A5
 /**
  * The DHT11's port
  */
@@ -63,10 +64,17 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensor(&oneWire);
 dht11 DHT11;
 IRrecv receiver(RECEIVER_BUS);
+IRsend sender;
 decode_results results;
 
-long touch, hello_touch, data_timeout = 5000, hello_timeout = 5000;
-int pos = 0, fail_count = 3, mode = MODE_SILENT, door_value;
+long    touch,                              // sensor data touch timestamp
+        hello_touch,                        // hello touch timestamp
+        data_timeout = 1000,                // sensor data timeout
+        hello_timeout = 1000;               // hello timeout
+int pos = 0,                                // command read position
+        fail_count = 3,                         // bluetooth connect fail count
+        mode = MODE_SILENT,                     // IR Control mode
+        door_value, v1, mismatch_count = 0;     // door sensor variables
 char command[MAX_LENGTH];
 
 /**
@@ -196,6 +204,7 @@ void sendData (char target, int value) {
             digitalWrite (LOCK_BUS, value);
             break;
         case TARGET_REMOTE :
+            sender.sendNEC (value);
             break;
         case TARGET_LIGHT :
             digitalWrite (LIGHT_BUS, value);
@@ -225,14 +234,21 @@ void learn () {
 
 void checkEvent () {
     int value = digitalRead (DOOR_SENSOR_BUS);
-    if (door_value != value) {
-        door_value = value;
-        if (door_value == HIGH) {
-            Serial.println ("{\"E\":{\"D\":\"C\"}}");
-            // door is closed.
+    if (value != door_value) {
+        if (mismatch_count >= 5) {
+            if (value == HIGH) {
+                door_value = 1;
+                Serial.println ("{\"E\":{\"D\":\"C\"}}");
+                // door is closed.
+            } else {
+                door_value = 0;
+                Serial.println ("{\"E\":{\"D\":\"O\"}}");
+                // door is opened.
+            }
+            v1 = door_value;
+            mismatch_count = 0;
         } else {
-            Serial.println ("{\"E\":{\"D\":\"O\"}}");
-            // door is opened.
+            mismatch_count++;
         }
     }
 }
@@ -242,13 +258,14 @@ void setup () {
 
     pinMode (ERROR_BUS, OUTPUT);
     pinMode (OK_BUS, OUTPUT);
+    pinMode (IR_LED, OUTPUT);
+    pinMode (DOOR_SENSOR_BUS, INPUT_PULLUP);
 
     digitalWrite (ERROR_BUS, HIGH);
     digitalWrite (OK_BUS, LOW);
 
     sensor.begin ();
     touch = hello_touch = millis ();
-
     door_value = digitalRead (DOOR_SENSOR_BUS);
 }
 
