@@ -9,16 +9,22 @@ public class ArduinoCommand {
             CMD_SET              = 'S',
             CMD_RESET            = 'R',
             CMD_TOGGLE           = 'T',
+            CMD_SEND_DATA        = 'D',
 
             // types
             TYPE_DATA_TIMEOUT    = 'D',
             TYPE_HELLO_TIMEOUT   = 'H',
+            TYPE_IR_MODE         = 'M',
 
             // target
             TARGET_FAN           = 'F',
             TARGET_IR            = 'I',
             TARGET_REMOTE        = 'R',
-            TARGET_KEY           = 'K';
+            TARGET_KEY           = 'K',
+
+            // IR mode
+            IR_MODE_LEARN        = 'L',
+            IR_MODE_SILENCE      = 'S';
 
     public static final byte[] CMD_HELLO = new byte[] {'H', 'E', 'L', 'O'};
 
