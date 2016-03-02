@@ -81,7 +81,10 @@ public class ControlPanel extends Activity
         switch (item.getId ()) {
             case 0 : {       // fan
                 Intent intent = new Intent (Keys.Actions.SET_ARDUINO);
-                intent.putExtra ("command", ArduinoCommand.toggle (ArduinoCommand.TARGET_FAN));
+                if (item.isToggled ())
+                    intent.putExtra ("command", ArduinoCommand.CMD_CLOSE_FAN);
+                else
+                    intent.putExtra ("command", ArduinoCommand.CMD_OPEN_FAN);
                 sendBroadcast (intent);
                 break;
             }
@@ -89,7 +92,7 @@ public class ControlPanel extends Activity
                 break;
             case 2 :
                 break;
-            case 3 :
+            case 3 :        // 红外遥控器
                 break;
             case 4 :
                 break;

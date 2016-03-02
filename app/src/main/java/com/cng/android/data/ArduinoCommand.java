@@ -1,5 +1,7 @@
 package com.cng.android.data;
 
+import java.net.PortUnreachableException;
+
 /**
  * Created by game on 2016/2/29
  */
@@ -24,9 +26,16 @@ public class ArduinoCommand {
 
             // IR mode
             IR_MODE_LEARN        = 'L',
-            IR_MODE_SILENCE      = 'S';
+            IR_MODE_SILENT       = 'S',
 
-    public static final byte[] CMD_HELLO = new byte[] {'H', 'E', 'L', 'O'};
+            DATA_OPEN            = 1,
+            DATA_CLOSE           = 0;
+
+    public static final byte[] CMD_HELLO         = {'H', 'E', 'L', 'O'};
+    public static final byte[] CMD_LEARN_IR_CODE = { CMD_SET,       TYPE_IR_MODE, IR_MODE_LEARN,  0, 0, 0 };
+    public static final byte[] CMD_IR_SILENT     = { CMD_SET,       TYPE_IR_MODE, IR_MODE_SILENT, 0, 0, 0 };
+    public static final byte[] CMD_OPEN_FAN      = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 1 };
+    public static final byte[] CMD_CLOSE_FAN     = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 0 };
 
     public static byte[] set (byte type, int value) {
         byte[] command = new byte[4];

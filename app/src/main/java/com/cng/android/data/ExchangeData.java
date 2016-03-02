@@ -14,4 +14,8 @@ public class ExchangeData {
     @Expose
     @SerializedName ("E")
     public Event   event;
+
+    @Expose
+    @SerializedName ("I")
+    public IRCommand ir;
 }

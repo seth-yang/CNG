@@ -258,12 +258,17 @@ public class StateMonitorService extends IntentService
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
                 CNG.runInNonUIThread (writer);
                 Gson g = new GsonBuilder ().create ();
+                Intent intent = new Intent (Keys.Actions.ON_RECEIVE_IR_COMMAND);
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
                     if (D)
                         Log.d (TAG, "Got a message: " + line);
                     try {
                         ExchangeData trans = g.fromJson (line.trim (), ExchangeData.class);
+                        if (trans.ir != null) {
+                            intent.putExtra (Keys.IR_COMMAND, trans.ir);
+                            sendBroadcast (intent);
+                        }
                         saver.write (trans);
                         synchronized (locker) {
                             data = trans.data;
