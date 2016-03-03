@@ -2,14 +2,18 @@ package com.cng.android.concurrent;
 
 import android.util.Log;
 
+import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.Result;
 import com.cng.android.data.SetupItem;
 import com.cng.android.db.DBService;
 import com.cng.android.util.DataUtil;
+import com.cng.android.util.GsonHelper;
 import com.cng.android.util.HttpUtil;
 import com.cng.android.util.Keys;
+import com.cng.android.util.gson.EventTypeTranslator;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -41,7 +45,9 @@ public class DataSaver extends CancelableThread {
     private long touch = System.currentTimeMillis ();
     private String url, hostId;
     private Mode mode = Mode.Ethernet;
-    private Gson g = new Gson ();
+    private Gson g = new GsonBuilder ()
+                         .registerTypeAdapter (EventType.class, new EventTypeTranslator ())
+                         .create ();
     private Type type = new TypeToken<Result<Object>> () {}.getType ();
 
     public DataSaver () {
@@ -103,8 +109,10 @@ public class DataSaver extends CancelableThread {
                     }
                 }
             } else if (object instanceof ExchangeData) {
-                if (D)
+                if (D) {
                     Log.d (TAG, "receive a exchange data.");
+                    Log.d (TAG, "data = " + (GsonHelper.getGson (true, true).toJson (object)));
+                }
                 ExchangeData transformer = (ExchangeData) object;
 
                 List<ExchangeData> copy = null;

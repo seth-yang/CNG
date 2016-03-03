@@ -16,4 +16,11 @@ public class IRCommand implements Serializable {
     @Expose
     @SerializedName ("T")
     public int  type;
+
+    @Override
+    public String toString () {
+        String temp = super.toString ();
+        int pos = temp.indexOf ('@');
+        return "{code:" + String.format ("%08X", code) + ",type:" + type + "}@" + temp.substring (pos + 1);
+    }
 }

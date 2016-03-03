@@ -19,6 +19,7 @@ import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
+import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.EnvData;
@@ -28,6 +29,7 @@ import com.cng.android.receiver.IBroadcastHandler;
 import com.cng.android.util.BluetoothDiscover;
 import com.cng.android.util.IBluetoothListener;
 import com.cng.android.util.Keys;
+import com.cng.android.util.gson.EventTypeTranslator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -257,7 +259,7 @@ public class StateMonitorService extends IntentService
 
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
                 CNG.runInNonUIThread (writer);
-                Gson g = new GsonBuilder ().create ();
+                Gson g = new GsonBuilder ().registerTypeAdapter (EventType.class, new EventTypeTranslator ()).create ();
                 Intent intent = new Intent (Keys.Actions.ON_RECEIVE_IR_COMMAND);
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
@@ -265,6 +267,8 @@ public class StateMonitorService extends IntentService
                         Log.d (TAG, "Got a message: " + line);
                     try {
                         ExchangeData trans = g.fromJson (line.trim (), ExchangeData.class);
+                        if (D)
+                            System.out.println (trans);
                         if (trans.ir != null) {
                             intent.putExtra (Keys.IR_COMMAND, trans.ir);
                             sendBroadcast (intent);
@@ -274,6 +278,7 @@ public class StateMonitorService extends IntentService
                             data = trans.data;
                         }
                     } catch (Exception ex) {
+                        Log.w (TAG, ex.getMessage (), ex);
                         // ignore
                     }
                 }

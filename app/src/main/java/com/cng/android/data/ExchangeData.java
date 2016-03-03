@@ -18,4 +18,12 @@ public class ExchangeData {
     @Expose
     @SerializedName ("I")
     public IRCommand ir;
+
+    @Override
+    public String toString () {
+        return "{" +
+                "    data : " + data + "," +
+                "    event: " + event + "," +
+                "    IR   : " + ir + "}";
+    }
 }

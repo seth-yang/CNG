@@ -55,4 +55,11 @@ public class EnvData implements Serializable {
     public void setSmoke (Double smoke) {
         this.smoke = smoke;
     }
+
+    @Override
+    public String toString () {
+        String temp = super.toString ();
+        int pos = temp.indexOf ('@');
+        return "{temp:" + temperature + ",humidity:" + humidity + ",smoke:" + smoke + "}@" + temp.substring (pos + 1);
+    }
 }

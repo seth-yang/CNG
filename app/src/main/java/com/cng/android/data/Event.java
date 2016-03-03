@@ -22,4 +22,11 @@ public class Event {
     public Event () {
         timestamp = System.currentTimeMillis ();
     }
+
+    @Override
+    public String toString () {
+        String temp = super.toString ();
+        int pos = temp.indexOf ('@');
+        return "{type:" + type + ",data:" + data + "}@" + temp.substring (pos + 1);
+    }
 }
