@@ -17,6 +17,7 @@ import android.util.Log;
 import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
+import com.cng.android.arduino.IArduino;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
 import com.cng.android.data.EventType;
@@ -43,7 +44,7 @@ import java.lang.reflect.Method;
 import static com.cng.android.CNG.D;
 
 public class StateMonitorService extends IntentService
-        implements IBluetoothListener, IBroadcastHandler {
+        implements IBluetoothListener, IBroadcastHandler, IArduino {
 //    public static final UUID SPP_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
 //    public static final UUID SPP_UUID = UUID.fromString ("a60f35f0-b93a-11de-8a39-08002009c666");
 
@@ -278,7 +279,7 @@ public class StateMonitorService extends IntentService
                             data = trans.data;
                         }
                     } catch (Exception ex) {
-                        Log.w (TAG, ex.getMessage (), ex);
+//                        Log.w (TAG, ex.getMessage (), ex);
                         // ignore
                     }
                 }
@@ -339,6 +340,13 @@ public class StateMonitorService extends IntentService
             if (command != null) {
                 writer.write (command);
             }
+        }
+    }
+
+    @Override
+    public void write (byte[] data) {
+        if (writer != null) {
+            writer.write (data);
         }
     }
 }

@@ -31,13 +31,6 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:screenOrientation="landscape">
-
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-            -->
         </activity>
         <activity
             android:name=".activity.ShowBTDeviceActivity"
@@ -77,10 +70,10 @@
             android:name=".activity.DashboardActivity"
             android:label="@string/title_activity_dashboard">
         </activity>
-        <activity
-            android:name=".activity.ControlPanel"
-            android:label="@string/btn_control_panel">
-        </activity>
+        <activity android:name=".activity.ControlPanel"
+                  android:label="@string/btn_control_panel" />
+        <activity android:name=".activity.ControlPanel2"
+                  android:label="@string/btn_control_panel" />
     </application>
 
 </manifest>

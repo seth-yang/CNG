@@ -9,6 +9,7 @@ import com.cng.android.util.Keys;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -90,24 +91,32 @@ public class BluetoothWriter implements Runnable {
         if (CNG.D)
             Log.d (TAG, "I'll say HELLO to BT device every " + interval + " milliseconds, let's go!");
         while (running) {
+/*
             Object o = null;
             try {
                 o = queue.poll (interval, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
                 Log.w (TAG, ex.getMessage (), ex);
             }
+*/
+            Object o = queue.poll ();
 
             if (o != QUIT) {
                 byte[] command;
+/*
                 if (o == null)
                     command = HELLO;
                 else
+*/
+                if (o != null) {
                     command = (byte[]) o;
 
-                try {
-                    out.write (command);
-                } catch (IOException ex) {
-                    Log.w (TAG, ex.getMessage (), ex);
+                    try {
+                        out.write (command);
+                        out.flush ();
+                    } catch (IOException ex) {
+                        Log.w (TAG, ex.getMessage (), ex);
+                    }
                 }
             } else {
                 if (D)

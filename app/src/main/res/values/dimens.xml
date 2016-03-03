@@ -13,4 +13,5 @@
     <dimen name="setup_item_label_width">240sp</dimen>
     <dimen name="action_bar_horizontal_padding">10sp</dimen>
     <dimen name="action_bar_vertical_padding">5sp</dimen>
+    <dimen name="control_panel_item_font_size">16sp</dimen>
 </resources>

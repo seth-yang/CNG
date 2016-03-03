@@ -51,4 +51,8 @@ public class BluetoothDataProvider implements IDataProvider, ServiceConnection {
     public boolean isConnected () {
         return connected;
     }
+
+    public MonitorServiceBinder getBinder () {
+        return service;
+    }
 }

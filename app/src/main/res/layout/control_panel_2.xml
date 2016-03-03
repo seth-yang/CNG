@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/btn_back"
+        android:drawableStart="@drawable/arrow_left"
+        style="@style/action_bar_item"
+        android:text="@string/btn_control_panel"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="2sp"
+        style="@style/separator_h"/>
+
+    <LinearLayout
+        android:baselineAligned="false"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0sp">
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            >
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:drawableTop="@drawable/gv_fan_activated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gv_fan"
+                    style="@style/cp_item.current"
+                    android:id="@+id/fan"/>
+
+                <TextView
+                    style="@style/cp_item"
+                    android:drawableTop="@drawable/gv_remote_control"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gv_remote"
+                    android:background="@drawable/grid_item_background"
+                    android:id="@+id/remote"/>
+
+                <TextView
+                    style="@style/cp_item"
+                    android:drawableTop="@drawable/gv_infrared"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gv_ir"
+                    android:id="@+id/ir"/>
+
+                <TextView
+                    style="@style/cp_item"
+                    android:drawableTop="@drawable/gv_key"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gv_key"
+                    android:id="@+id/door"/>
+
+                <TextView
+                    style="@style/cp_item"
+                    android:drawableTop="@drawable/gv_electrical_sensor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/gv_other"
+                    android:id="@+id/textView"/>
+            </LinearLayout>
+        </ScrollView>
+
+        <TextView
+            android:layout_width="2sp"
+            android:layout_height="match_parent"
+            style="@style/separator_v"/>
+
+        <ScrollView
+            android:layout_width="0sp"
+            android:layout_height="match_parent"
+            android:id="@+id/container"
+            android:layout_weight="1"/>
+    </LinearLayout>
+</LinearLayout>

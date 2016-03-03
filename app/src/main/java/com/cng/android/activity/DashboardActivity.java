@@ -144,7 +144,7 @@ public class DashboardActivity extends Activity
                 case R.id.update:
                     break;
                 case R.id.system: {
-                    Intent intent = new Intent (this, ControlPanel.class);
+                    Intent intent = new Intent (this, ControlPanel2.class);
                     startActivity (intent);
                     break;
                 }

@@ -2,6 +2,7 @@ package com.cng.android.service;
 
 import android.os.Binder;
 
+import com.cng.android.arduino.IArduino;
 import com.cng.android.data.EnvData;
 import com.cng.android.data.IDataProvider;
 
@@ -22,5 +23,9 @@ public class MonitorServiceBinder extends Binder implements IDataProvider {
     @Override
     public EnvData getData () {
         return service.getData ();
+    }
+
+    public IArduino getArduino () {
+        return service;
     }
 }
