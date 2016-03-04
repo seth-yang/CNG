@@ -88,6 +88,9 @@
     <string name="title_error">错误</string>
     <string name="title_activity_dashboard">仪表盘</string>
 
+    <string name="label_on">ON</string>
+    <string name="label_off">OFF</string>
+
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
 
     <string name="label_device_address">蓝牙设备地址</string>

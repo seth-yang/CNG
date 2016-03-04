@@ -40,8 +40,8 @@ public class ControlPanel2 extends BaseActivity {
 //        mapping.put (R.id.fan, new StateMapping (R.drawable.gv_fan, R.drawable.gv_fan_activated));
         mapping.put (R.id.fan, new StateMapping (R.drawable.gv_fan, R.drawable.gv_fan_activated));
         mapping.put (R.id.remote, new StateMapping (R.drawable.gv_remote_control, R.drawable.gv_remote_control_activated));
-        mapping.put (R.id.ir, new StateMapping (R.drawable.gv_infrared, R.drawable.gv_infrared_activated));
-        mapping.put (R.id.door, new StateMapping (R.drawable.gv_key, R.drawable.gv_key_activated));
+        mapping.put (R.id.ir, new StateMapping (R.drawable.motion_detector, R.drawable.motion_detector_activated));
+        mapping.put (R.id.door, new StateMapping (R.drawable.card_in_use, R.drawable.card_in_use_activated));
     }
 
     @Override
@@ -49,6 +49,7 @@ public class ControlPanel2 extends BaseActivity {
         super.onCreate (savedInstanceState);
         setContentView (R.layout.control_panel_2);
 
+/*
         TextView fan = (TextView) findViewById (R.id.fan);
         TextView remote = (TextView) findViewById (R.id.remote);
         TextView ir = (TextView) findViewById (R.id.ir);
@@ -58,6 +59,7 @@ public class ControlPanel2 extends BaseActivity {
         cachedView.put (R.id.remote, remote);
         cachedView.put (R.id.ir, ir);
         cachedView.put (R.id.door, door);
+*/
 
         for (TextView view : cachedView.values ())
             view.setOnClickListener (this);

@@ -80,7 +80,6 @@
     </style>
     <style name="cp_item.current" parent="cp_item">
         <item name="android:textSize">@dimen/control_panel_item_font_size</item>
-        <item name="android:gravity">center_horizontal</item>
         <item name="android:textColor">#ccc</item>
         <item name="android:background">#333</item>
     </style>
@@ -92,6 +91,14 @@
     <style name="separator_h" parent="AppTheme">
         <item name="android:layout_width">match_parent</item>
         <item name="android:height">2sp</item>
-        <item name="android:background">#333</item>
+        <item name="android:background">#222</item>
+    </style>
+    <style name="switch_current" parent="cp_item">
+        <item name="android:textColor">#ccc</item>
+    </style>
+    <style name="cp_button" parent="AppTheme">
+        <item name="android:background">@drawable/grid_item_background</item>
+        <item name="android:padding">25sp</item>
+        <item name="android:layout_gravity">center</item>
     </style>
 </resources>
