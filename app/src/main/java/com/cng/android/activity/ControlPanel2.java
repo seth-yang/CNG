@@ -37,10 +37,11 @@ public class ControlPanel2 extends BaseActivity {
     private IArduino arduino;
 
     public ControlPanel2 () {
+//        mapping.put (R.id.fan, new StateMapping (R.drawable.gv_fan, R.drawable.gv_fan_activated));
         mapping.put (R.id.fan, new StateMapping (R.drawable.gv_fan, R.drawable.gv_fan_activated));
         mapping.put (R.id.remote, new StateMapping (R.drawable.gv_remote_control, R.drawable.gv_remote_control_activated));
-        mapping.put (R.id.ir, new StateMapping (R.drawable.gv_infrared, R.drawable.gv_infrared));
-        mapping.put (R.id.door, new StateMapping (R.drawable.gv_key, R.drawable.gv_key));
+        mapping.put (R.id.ir, new StateMapping (R.drawable.gv_infrared, R.drawable.gv_infrared_activated));
+        mapping.put (R.id.door, new StateMapping (R.drawable.gv_key, R.drawable.gv_key_activated));
     }
 
     @Override
@@ -138,7 +139,7 @@ public class ControlPanel2 extends BaseActivity {
             StateMapping state = mapping.get (selectedView);
             Drawable drawable = getDrawable (state.icon);
             view.setCompoundDrawablesWithIntrinsicBounds (null, drawable, null, null);
-            view.setTextColor (0x333333);
+            view.setTextColor (0xFF333333);
             view.setBackgroundColor (Color.TRANSPARENT);
         }
 
@@ -146,8 +147,8 @@ public class ControlPanel2 extends BaseActivity {
         StateMapping state = mapping.get (id);
         Drawable drawable = getDrawable (state.activatedIcon);
         view.setCompoundDrawablesWithIntrinsicBounds (null, drawable, null, null);
-        view.setTextColor (0xCCCCCC);
-        view.setBackgroundColor (0x333333);
+        view.setTextColor (0xFFCCCCCC);
+        view.setBackgroundColor (0xFF333333);
         selectedView = id;
     }
 
