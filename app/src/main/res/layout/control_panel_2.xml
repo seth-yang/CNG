@@ -109,7 +109,8 @@
                 style="@style/cp_item"
                 android:layout_column="0"
                 android:layout_row="1"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/fan_on"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,7 +118,8 @@
                 android:layout_column="2"
                 style="@style/cp_item"
                 android:layout_gravity="fill_horizontal"
-                android:layout_row="1"/>
+                android:layout_row="1"
+                android:id="@+id/remote_on"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -125,7 +127,8 @@
                 android:layout_column="4"
                 style="@style/cp_item"
                 android:layout_gravity="fill_horizontal"
-                android:layout_row="1"/>
+                android:layout_row="1"
+                android:id="@+id/ir_on"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -133,7 +136,8 @@
                 android:layout_column="6"
                 style="@style/cp_item"
                 android:layout_gravity="fill_horizontal"
-                android:layout_row="1"/>
+                android:layout_row="1"
+                android:id="@+id/card_on"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -141,7 +145,8 @@
                 android:layout_column="8"
                 style="@style/cp_item"
                 android:layout_gravity="fill_horizontal"
-                android:layout_row="1"/>
+                android:layout_row="1"
+                android:id="@+id/other_on"/>
 
             <ImageButton
                 android:layout_width="wrap_content"
@@ -190,7 +195,8 @@
                 android:layout_column="0"
                 android:layout_row="4"
                 style="@style/switch_current"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/fan_off"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -198,7 +204,8 @@
                 android:layout_column="2"
                 android:layout_row="4"
                 style="@style/switch_current"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/remote_off"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -206,7 +213,8 @@
                 android:layout_column="4"
                 android:layout_row="4"
                 style="@style/switch_current"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/ir_off"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -214,7 +222,8 @@
                 android:layout_column="6"
                 android:layout_row="4"
                 style="@style/switch_current"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/card_off"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -222,7 +231,8 @@
                 android:layout_column="8"
                 android:layout_row="4"
                 style="@style/switch_current"
-                android:layout_gravity="fill_horizontal"/>
+                android:layout_gravity="fill_horizontal"
+                android:id="@+id/other_off"/>
         </GridLayout>
     </HorizontalScrollView>
 </LinearLayout>
