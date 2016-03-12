@@ -1,11 +1,13 @@
 package com.cng.android.db;
 
+import com.cng.android.util.Keys;
+
 /**
  * Created by seth.yang on 2016/2/23
  */
 public interface DBSchema {
     interface Config {
-        String TABLE_NAME = "conf";
+        String TABLE_NAME = "_conf";
         String
                 NAME = "_name", VALUE = "_value", CHINESE = "_chinese",
                 TYPE = "_type", EDITABLE = "_editable", VISIBLE = "_visible";
@@ -63,5 +65,26 @@ public interface DBSchema {
                 "INSERT INTO " + TABLE_NAME + " (" + TIMESTAMP + ", " + TYPE + ", " + DATA + ") " +
                 "VALUES (?, ?, ?)";
         String SQL_CLEAR = "TRUNCATE TABLE " + TABLE_NAME;
+    }
+
+    interface IR_Code {
+        String TABLE_NAME = "_ir_code";
+        String NAME       = "_name";
+        String CHINESE    = "_chinese";
+        String CODE       = "_code";
+        String[] ALL_COLUMNS = {NAME, CHINESE, CODE};
+        String DDL_CREATE = "CREATE TABLE " + TABLE_NAME + " ( " +
+                NAME + " VARCHAR (64) NOT NULL PRIMARY KEY, " +
+                CHINESE + " TEXT, " +
+                CODE + " INTEGER)";
+        String SQL_INSERT = "INSERT INTO " + TABLE_NAME + " (" +
+                NAME + ", " + CHINESE + ", " + CODE + ") VALUES (?, ?, ?)";
+    }
+
+    interface Card {
+        String TABLE_NAME = "_card";
+        String CARD_NO    = "_card_no";
+        String DDL_CREATE = "CREATE TABLE " + TABLE_NAME + " (" + CARD_NO + " INTEGER NOT NULL PRIMARY KEY)";
+        String SQL_INSERT = "INSERT INTO " + TABLE_NAME + " (" + CARD_NO + ") VALUES (?)";
     }
 }

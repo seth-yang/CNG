@@ -25,6 +25,8 @@ class DBHelper extends SQLiteOpenHelper {
         db.execSQL (DBSchema.Config.DDL_CREATE);
         db.execSQL (DBSchema.SensorData.DDL_CREATE);
         db.execSQL (DBSchema.Event.DDL_CREATE);
+        db.execSQL (DBSchema.Card.DDL_CREATE);
+        db.execSQL (DBSchema.IR_Code.DDL_CREATE);
     }
 
     @Override

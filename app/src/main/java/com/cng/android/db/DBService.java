@@ -9,7 +9,6 @@ import com.cng.android.data.EnvData;
 import com.cng.android.data.Event;
 import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
-import com.cng.android.data.SetupItem;
 import com.cng.android.util.DataUtil;
 
 import java.io.BufferedReader;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +123,10 @@ public class DBService {
         try {
             db.beginTransaction ();
             while ((line = reader.readLine ()) != null) {
-                db.execSQL (line.trim ());
+                line = line.trim ();
+                if (line.length () == 0) continue;
+                if (line.startsWith ("--") || line.startsWith ("#")) continue;
+                db.execSQL (line);
             }
             db.setTransactionSuccessful ();
         } finally {
@@ -148,71 +151,6 @@ public class DBService {
                 return count != 0;
             }
             return false;
-        } finally {
-            if (cursor != null)
-                cursor.close ();
-        }
-    }
-
-    public static List<SetupItem> getSetupItems (boolean all) {
-        List<SetupItem> list = new ArrayList<> ();
-        Cursor cursor = null;
-        try {
-            cursor = db.query (
-                    DBSchema.Config.TABLE_NAME,
-                    DBSchema.Config.ALL_COLUMNS,
-                    all ? null : DBSchema.Config.VISIBLE + " = ?",
-                    all ? null : new String[] {"true"},
-                    null,
-                    null,
-                    DBSchema.Config.CHINESE
-            );
-            while (cursor.moveToNext ()) {
-                list.add (buildItem (cursor));
-            }
-            return list;
-        } finally {
-            if (cursor != null)
-                cursor.close ();
-        }
-    }
-
-    public static void saveSetupItem (SetupItem item) {
-        db.execSQL (DBSchema.Config.SQL_INSERT, item.toParameters ());
-    }
-
-    public static void saveSetupItems (Collection<SetupItem> items) {
-        try {
-            db.beginTransaction ();
-            for (SetupItem item : items) {
-                db.execSQL (DBSchema.Config.SQL_INSERT, item.toParameters ());
-            }
-            db.setTransactionSuccessful ();
-        } finally {
-            db.endTransaction ();
-        }
-    }
-
-    public static void updateSetupItem (String value, String name) {
-        db.execSQL (DBSchema.Config.SQL_UPDATE, new String[] {value, name});
-    }
-
-    public static SetupItem getSetupItem (String name) {
-        Cursor cursor = null;
-        try {
-            cursor = db.query (
-                    DBSchema.Config.TABLE_NAME,
-                    DBSchema.Config.ALL_COLUMNS,
-                    DBSchema.Config.NAME + " = ?",
-                    new String[] {name},
-                    null,
-                    null,
-                    null
-            );
-            if (cursor.moveToNext ())
-                return buildItem (cursor);
-
-            return null;
         } finally {
             if (cursor != null)
                 cursor.close ();
@@ -286,6 +224,174 @@ public class DBService {
         db.execSQL (DBSchema.SensorData.SQL_CLEAR);
     }
 
+    public static final class SetupItem {
+        public static List<com.cng.android.data.SetupItem> getItems (boolean all) {
+            List<com.cng.android.data.SetupItem> list = new ArrayList<> ();
+            Cursor cursor = null;
+            try {
+                cursor = db.query (
+                        DBSchema.Config.TABLE_NAME,
+                        DBSchema.Config.ALL_COLUMNS,
+                        all ? null : DBSchema.Config.VISIBLE + " = ?",
+                        all ? null : new String[] {"true"},
+                        null,
+                        null,
+                        DBSchema.Config.CHINESE
+                );
+                while (cursor.moveToNext ()) {
+                    list.add (buildItem (cursor));
+                }
+                return list;
+            } finally {
+                if (cursor != null)
+                    cursor.close ();
+            }
+        }
+
+        private static com.cng.android.data.SetupItem buildItem (Cursor cursor) {
+            com.cng.android.data.SetupItem item = new com.cng.android.data.SetupItem ();
+            item.setName (cursor.getString (0));
+            item.setChinese (cursor.getString (1));
+            String _type = cursor.getString (cursor.getColumnIndex (DBSchema.Config.TYPE));
+            com.cng.android.data.SetupItem.Type type = com.cng.android.data.SetupItem.Type.valueOf (_type);
+            item.setType (type);
+            switch (type) {
+                case Boolean:
+                    boolean b = Boolean.parseBoolean (cursor.getString (2));
+                    item.setValue (b);
+                    break;
+                case Double:
+                    item.setValue (cursor.getDouble (2));
+                    break;
+                case Integer:
+                    item.setValue (cursor.getInt (2));
+                    break;
+                default :
+                    item.setValue (cursor.getString (2));
+                    break;
+            }
+            String editable = cursor.getString (4);
+            item.setEditable (Boolean.parseBoolean (editable));
+            String visible = cursor.getString (5);
+            item.setVisible (Boolean.parseBoolean (visible));
+            return item;
+        }
+
+        public static void saveItem (com.cng.android.data.SetupItem item) {
+            db.execSQL (DBSchema.Config.SQL_INSERT, item.toParameters ());
+        }
+
+        public static void saveItems (Collection<com.cng.android.data.SetupItem> items) {
+            try {
+                db.beginTransaction ();
+                for (com.cng.android.data.SetupItem item : items) {
+                    db.execSQL (DBSchema.Config.SQL_INSERT, item.toParameters ());
+                }
+                db.setTransactionSuccessful ();
+            } finally {
+                db.endTransaction ();
+            }
+        }
+
+        public static void updateItem (String value, String name) {
+            db.execSQL (DBSchema.Config.SQL_UPDATE, new String[] {value, name});
+        }
+
+        public static com.cng.android.data.SetupItem getItem (String name) {
+            Cursor cursor = null;
+            try {
+                cursor = db.query (
+                        DBSchema.Config.TABLE_NAME,
+                        DBSchema.Config.ALL_COLUMNS,
+                        DBSchema.Config.NAME + " = ?",
+                        new String[] {name},
+                        null,
+                        null,
+                        null
+                );
+                if (cursor.moveToNext ())
+                    return buildItem (cursor);
+
+                return null;
+            } finally {
+                if (cursor != null)
+                    cursor.close ();
+            }
+        }
+
+        public static int getIntValue (String name, int defaultValue) {
+            Cursor cursor = null;
+            try {
+                String sql =
+                        "SELECT " + DBSchema.Config.VALUE +
+                                "  FROM " + DBSchema.Config.TABLE_NAME +
+                                " WHERE " + DBSchema.Config.NAME + " = ?";
+                cursor = db.rawQuery (sql, new String[]{name});
+                if (cursor.moveToNext ()) {
+                    return cursor.getInt (0);
+                }
+                return defaultValue;
+            } finally {
+                if (cursor != null) {
+                    cursor.close ();
+                }
+            }
+        }
+
+        public static String getStringValue (String name) {
+            Cursor cursor = null;
+            try {
+                String sql =
+                        "SELECT " + DBSchema.Config.VALUE +
+                                "  FROM " + DBSchema.Config.TABLE_NAME +
+                                " WHERE " + DBSchema.Config.NAME + " = ?";
+                cursor = db.rawQuery (sql, new String[] {name});
+                if (cursor.moveToNext ()) {
+                    return cursor.getString (0);
+                }
+                return null;
+            } finally {
+                if (cursor != null) {
+                    cursor.close ();
+                }
+            }
+        }
+    }
+
+    public static class Card {
+        public static boolean isCardValid (int code) {
+            Cursor cursor = null;
+            try {
+                String sql =
+                        "SELECT COUNT(*) " +
+                        "  FROM " + DBSchema.Card.TABLE_NAME +
+                        " WHERE " + DBSchema.Card.CARD_NO + " = ?";
+                cursor = db.rawQuery (sql, new String[] {String.valueOf (code)});
+                return cursor.moveToNext () && cursor.getInt (0) > 0;
+            } finally {
+                if (cursor != null) cursor.close ();
+            }
+        }
+
+        public static void save (Integer... codes) {
+            save (Arrays.asList (codes));
+        }
+
+        public static void save (Collection<Integer> codes) {
+            db.beginTransaction ();
+            try {
+                for (Integer code : codes) {
+                    if (!isCardValid (code)) {
+                        db.execSQL (DBSchema.Card.SQL_INSERT, new Object[] {code});
+                    }
+                }
+                db.setTransactionSuccessful ();
+            } finally {
+                db.endTransaction ();
+            }
+        }
+    }
+
 /*
     public static void saveData (Collection<Event> data) {
 
@@ -308,34 +414,7 @@ public class DBService {
     }
 */
 
-    private static SetupItem buildItem (Cursor cursor) {
-        SetupItem item = new SetupItem ();
-        item.setName (cursor.getString (0));
-        item.setChinese (cursor.getString (1));
-        String _type = cursor.getString (cursor.getColumnIndex (DBSchema.Config.TYPE));
-        SetupItem.Type type = SetupItem.Type.valueOf (_type);
-        item.setType (type);
-        switch (type) {
-            case Boolean:
-                boolean b = Boolean.parseBoolean (cursor.getString (2));
-                item.setValue (b);
-                break;
-            case Double:
-                item.setValue (cursor.getDouble (2));
-                break;
-            case Integer:
-                item.setValue (cursor.getInt (2));
-                break;
-            default :
-                item.setValue (cursor.getString (2));
-                break;
-        }
-        String editable = cursor.getString (4);
-        item.setEditable (Boolean.parseBoolean (editable));
-        String visible = cursor.getString (5);
-        item.setVisible (Boolean.parseBoolean (visible));
-        return item;
-    }
+
 
     private static EnvData buildSensorData (Cursor cursor) {
         EnvData data = new EnvData ();

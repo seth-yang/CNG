@@ -84,10 +84,10 @@ public class ShowBTDeviceActivity extends Activity implements Runnable, IMessage
                     String mac = device.getAddress ();
                     SetupItem item = new SetupItem (false, SetupItem.Type.Text);
                     item.setChinese (getString (R.string.label_device_address));
-                    item.setName (Keys.SAVED_MAC);
+                    item.setName (Keys.DataNames.SAVED_MAC);
                     item.setValue (mac);
                     item.setVisible (true);
-                    DBService.saveSetupItem (item);
+                    DBService.SetupItem.saveItem (item);
                     handler.sendEmptyMessage (RETURN);
                 }
                 break;

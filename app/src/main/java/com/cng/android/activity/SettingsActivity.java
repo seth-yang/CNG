@@ -82,7 +82,7 @@ public class SettingsActivity extends Activity
     public void run () {
         switch (localMessage.what) {
             case LOCAL_STATE_FETCH_DATA : {
-                adapter.setItems (DBService.getSetupItems (false));
+                adapter.setItems (DBService.SetupItem.getItems (false));
                 handler.sendEmptyMessage (0);
                 break;
             }
@@ -127,7 +127,7 @@ public class SettingsActivity extends Activity
     }
 
     private void updateItem (String name, String value) {
-        SetupItem item = DBService.getSetupItem (name);
+        SetupItem item = DBService.SetupItem.getItem (name);
         if (item == null)
             return;
 
@@ -163,8 +163,8 @@ public class SettingsActivity extends Activity
                 break;
         }
         if (target != null) {
-            DBService.updateSetupItem (String.valueOf (target), name);
-            adapter.setItems (DBService.getSetupItems (true));
+            DBService.SetupItem.updateItem (String.valueOf (target), name);
+            adapter.setItems (DBService.SetupItem.getItems (true));
             handler.sendEmptyMessage (0);
         }
     }

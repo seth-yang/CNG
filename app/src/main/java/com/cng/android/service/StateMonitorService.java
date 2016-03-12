@@ -20,6 +20,8 @@ import com.cng.android.activity.DashboardActivity;
 import com.cng.android.arduino.IArduino;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
+import com.cng.android.data.ArduinoCommand;
+import com.cng.android.data.CardRecord;
 import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
@@ -129,7 +131,7 @@ public class StateMonitorService extends IntentService
             Log.d (TAG, "first time in the service, discovery it");
 
         try {
-            SetupItem item = DBService.getSetupItem (Keys.SAVED_MAC);
+            SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.SAVED_MAC);
             if (item != null) {
                 savedMac = (String) item.getValue ();
                 if (D)
@@ -146,6 +148,8 @@ public class StateMonitorService extends IntentService
                     }
                 }
 
+                if (D)
+                    Log.d (TAG, "The bluetooth device connected, listening to it.");
                 while (running)
                     connect ();
             }
@@ -274,6 +278,17 @@ public class StateMonitorService extends IntentService
                             intent.putExtra (Keys.IR_COMMAND, trans.ir);
                             sendBroadcast (intent);
                         }
+                        if (trans.event != null) {
+                            if (trans.event.type == EventType.CardAccessed) {
+                                CardRecord record = CardRecord.parse (trans.event.data);
+                                if (authenticate (record)) {
+                                    // 卡认证通过，通知 arduino 开门
+                                    if (D)
+                                        Log.d (Keys.TAG_ARDUINO, "authenticate card success, open the door");
+                                    write (ArduinoCommand.CMD_OPEN_DOOR);
+                                }
+                            }
+                        }
                         saver.write (trans);
                         synchronized (locker) {
                             data = trans.data;
@@ -341,6 +356,34 @@ public class StateMonitorService extends IntentService
                 writer.write (command);
             }
         }
+    }
+
+    /**
+     * 认证卡信息.
+     *
+     * <h3>认证步骤</h3>
+     * <ul>
+     *     <li>1. 卡信息是否为空</li>
+     *     <li>2. 验证卡片数据的版本号</li>
+     *     <li>3. 若卡片的 <code>admin</code> 标识为真, 直接返回真</li>
+     *     <li>4. 卡号是否和本地数据匹配</li>
+     *     <li>5. 验证有效期</li>
+     * </ul>
+     * @param card 卡信息
+     * @return 指定的卡片信息是否具备开门的权限
+     */
+    private boolean authenticate (CardRecord card) {
+        // step 1.
+        if (card == null) return false;
+
+        // step 2. check the version
+        int major_version = DBService.SetupItem.getIntValue (Keys.DataNames.CARD_MAJOR_VERSION, 0);
+        int minor_version = DBService.SetupItem.getIntValue (Keys.DataNames.CARD_MINOR_VERSION, 0);
+        if (card.minorVersion > minor_version || card.majorVersion > major_version)
+            return false;
+
+        // step 3. check if the card is admin card.
+        return card.admin || DBService.Card.isCardValid (card.cardNo) && card.expire.getTime () >= System.currentTimeMillis ();
     }
 
     @Override

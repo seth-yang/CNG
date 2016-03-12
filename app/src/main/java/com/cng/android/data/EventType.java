@@ -4,7 +4,7 @@ package com.cng.android.data;
  * Created by game on 2016/2/27
  */
 public enum EventType {
-    Door ('D'), CardAccessed ('A'), DeviceDown ('d')
+    Door ('D'), CardAccessed ('C'), DeviceUp ('U'), DeviceDown ('d')
     ;
 
     public int code;

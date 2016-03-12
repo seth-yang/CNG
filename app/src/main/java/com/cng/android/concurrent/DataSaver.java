@@ -155,14 +155,14 @@ public class DataSaver extends CancelableThread {
 
     private void uploadData (Map<String, Object> map) throws IOException {
         if (url == null) {
-            SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
+            SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.CLOUD_URL);
             if (item != null) {
                 url = item.getValue () + "upload";
             }
         }
 
         if (hostId == null) {
-            SetupItem item = DBService.getSetupItem (Keys.APP_UUID);
+            SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.APP_UUID);
             if (item != null) {
                 hostId = (String) item.getValue ();
                 url += "?" + hostId;

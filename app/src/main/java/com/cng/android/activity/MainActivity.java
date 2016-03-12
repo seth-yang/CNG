@@ -152,7 +152,7 @@ public class MainActivity extends Activity implements Runnable, IMessageHandler 
 
     @Override
     public void run () {
-        if (!DBService.exist (Keys.SAVED_MAC)) {
+        if (!DBService.exist (Keys.DataNames.SAVED_MAC)) {
             handler.sendEmptyMessage (REQ_CODE);
         } else {
             if (!serviceStarted) {

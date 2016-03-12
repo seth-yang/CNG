@@ -168,7 +168,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
 
             if (D)
                 Log.d (TAG, ">>>>>>>>>> check for saved mac <<<<<<<<<<");
-            if (DBService.exist (Keys.SAVED_MAC)) {
+            if (DBService.exist (Keys.DataNames.SAVED_MAC)) {
                 // step 4: start the monitor service
                 if (D)
                     Log.d (TAG, "Preparing to start background service to connect to the bluetooth device");
@@ -213,7 +213,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     private void checkAndInitSettings () {
         if (D)
             Log.d (TAG, "checking for app version ...");
-        if (!DBService.exist (Keys.APP_VERSION)) {
+        if (!DBService.exist (Keys.DataNames.APP_VERSION)) {
             if (D)
                 Log.d (TAG, "The app version is not set. set it from assets.");
             label = getString (R.string.title_first_run);
@@ -243,11 +243,11 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     private void checkAndFetchUUID () throws IOException {
         if (D)
             Log.d (TAG, "checking for app uuid");
-        if (!DBService.exist (Keys.APP_UUID)) {
+        if (!DBService.exist (Keys.DataNames.APP_UUID)) {
             if (D)
                 Log.d (TAG, "The app uuid is not set. fetch it from cloud server");
 
-            SetupItem item = DBService.getSetupItem (Keys.CLOUD_URL);
+            SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.CLOUD_URL);
             if (item != null) {
                 String url = item.getValue () + "register";
                 if (D) {
@@ -262,11 +262,11 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
                     throw new CNGException ("fetch uuid from cloud server fail.", R.string.err_register_fail);
                 } else {
                     item = new SetupItem (false, SetupItem.Type.Text);
-                    item.setName (Keys.APP_UUID);
+                    item.setName (Keys.DataNames.APP_UUID);
                     item.setValue (result.getUserData ().getId ());
                     item.setVisible (true);
                     item.setChinese (getString (R.string.label_app_uuid));
-                    DBService.saveSetupItem (item);
+                    DBService.SetupItem.saveItem (item);
                     if (D)
                         Log.d (TAG, "save the app uuid as: " + result.getUserData ().getId ());
                 }
@@ -281,7 +281,7 @@ public class SplashActivity extends Activity implements IMessageHandler, Runnabl
     private void checkAndMatchesDevice () throws InterruptedException {
         if (D)
             Log.d (TAG, "checking for matched bluetooth device.");
-        if (!DBService.exist (Keys.SAVED_MAC)) {
+        if (!DBService.exist (Keys.DataNames.SAVED_MAC)) {
             if (D)
                 Log.d (TAG, "The bluetooth device is not matched. open the setting activity");
             label = getString (R.string.title_connecting);

@@ -1,7 +1,5 @@
 package com.cng.android.data;
 
-import java.net.PortUnreachableException;
-
 /**
  * Created by game on 2016/2/29
  */
@@ -23,6 +21,7 @@ public class ArduinoCommand {
             TARGET_IR            = 'I',
             TARGET_REMOTE        = 'R',
             TARGET_KEY           = 'K',
+            TARGET_DOOR          = 'D',
 
             // IR mode
             IR_MODE_LEARN        = 'L',
@@ -36,6 +35,7 @@ public class ArduinoCommand {
     public static final byte[] CMD_IR_SILENT     = { CMD_SET,       TYPE_IR_MODE, IR_MODE_SILENT, 0, 0, 0 };
     public static final byte[] CMD_OPEN_FAN      = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 1 };
     public static final byte[] CMD_CLOSE_FAN     = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 0 };
+    public static final byte[] CMD_OPEN_DOOR     = { CMD_SEND_DATA, TARGET_DOOR,  0, 0, 0, 1 };
 
     public static byte[] set (byte type, int value) {
         byte[] command = new byte[4];

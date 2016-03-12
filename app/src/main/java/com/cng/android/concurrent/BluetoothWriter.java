@@ -3,16 +3,15 @@ package com.cng.android.concurrent;
 import android.util.Log;
 
 import com.cng.android.CNG;
+import com.cng.android.data.ArduinoCommand;
 import com.cng.android.data.SetupItem;
 import com.cng.android.db.DBService;
 import com.cng.android.util.Keys;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static com.cng.android.CNG.D;
 
@@ -21,10 +20,11 @@ import static com.cng.android.CNG.D;
  */
 public class BluetoothWriter implements Runnable {
     private static final String TAG = "BluetoothWriter";
-    private static final byte[] HELLO = {'H', 'E', 'L', 'O'};
+/*
     private static final byte CMD_SET              = 'S',
                               TYPE_DATA_TIMEOUT    = 'D',
                               TYPE_HELLO_TIMEOUT   = 'H';
+*/
 
     public static final Object QUIT = new byte [0];
 
@@ -44,8 +44,8 @@ public class BluetoothWriter implements Runnable {
         if (D)
             Log.d (TAG, "Set the hello interval to " + interval + " seconds.");
         byte[] command = new byte[4];
-        command [0] = CMD_SET;
-        command [1] = TYPE_HELLO_TIMEOUT;
+        command [0] = ArduinoCommand.CMD_SET;
+        command [1] = ArduinoCommand.TYPE_HELLO_TIMEOUT;
         setIntToBytes (command, interval);
         queue.offer (command);
     }
@@ -54,8 +54,8 @@ public class BluetoothWriter implements Runnable {
         if (D)
             Log.d (TAG, "Set the data interval to " + interval + " seconds.");
         byte[] command = new byte[4];
-        command [0] = CMD_SET;
-        command [1] = TYPE_DATA_TIMEOUT;
+        command [0] = ArduinoCommand.CMD_SET;
+        command [1] = ArduinoCommand.TYPE_DATA_TIMEOUT;
         setIntToBytes (command, interval);
         queue.offer (command);
     }
@@ -84,7 +84,7 @@ public class BluetoothWriter implements Runnable {
             }
             return;
         }
-        SetupItem item = DBService.getSetupItem (Keys.DASHBOARD_INTERVAL);
+        SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.DASHBOARD_INTERVAL);
         if (item != null) {
             interval = ((Number) item.getValue ()).intValue () * 1000;
         }
