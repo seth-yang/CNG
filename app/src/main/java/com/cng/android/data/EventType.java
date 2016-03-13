@@ -4,8 +4,15 @@ package com.cng.android.data;
  * Created by game on 2016/2/27
  */
 public enum EventType {
-    Door ('D'), CardAccessed ('C'), DeviceUp ('U'), DeviceDown ('d')
-    ;
+/*
+    TARGET_FAN           = 'F',
+    TARGET_IR            = 'I',
+    TARGET_REMOTE        = 'R',
+    TARGET_KEY           = 'K',
+    TARGET_DOOR          = 'D',
+*/
+
+    Fan ('F'), IR ('I'), Remote ('R'), Lock ('K'), Door ('D'), CardAccessed ('C');
 
     public int code;
 

@@ -81,7 +81,7 @@ public class DashboardActivity extends Activity
 
     @Override
     public void run () {
-        SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.DASHBOARD_INTERVAL);
+        SetupItem item = DBService.SetupItem.getItem (Keys.DataNames.GATHER_INTERVAL);
         long interval;
         if (item != null) {
             interval = 1000 * (Integer) item.getValue ();

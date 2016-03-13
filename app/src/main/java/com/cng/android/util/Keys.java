@@ -22,7 +22,9 @@ public interface Keys {
         String APP_UUID                       = "app.uuid";
         String SAVED_MAC                      = "saved.mac";
         String CLOUD_URL                      = "url.cloud";
-        String DASHBOARD_INTERVAL             = "dashboard.interval";
+        String GATHER_INTERVAL                = "gather.interval";
+        String UPLOAD_INTERVAL                = "upload.interval";
+        String HELLO_INTERVAL                 = "hello.interval";
         String CARD_MAJOR_VERSION             = "card.major.version";
         String CARD_MINOR_VERSION             = "card.minor.version";
 

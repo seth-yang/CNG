@@ -70,10 +70,16 @@
             android:name=".activity.DashboardActivity"
             android:label="@string/title_activity_dashboard">
         </activity>
-        <activity android:name=".activity.ControlPanel"
-                  android:label="@string/btn_control_panel" />
-        <activity android:name=".activity.ControlPanel2"
-                  android:label="@string/btn_control_panel" />
+        <activity
+            android:name=".activity.ControlPanel"
+            android:label="@string/btn_control_panel"/>
+        <activity
+            android:name=".activity.ControlPanel2"
+            android:label="@string/btn_control_panel"/>
+        <activity
+            android:name=".activity.IRControlPanelActivity"
+            android:label="@string/title_activity_ircontrol_panel">
+        </activity>
     </application>
 
 </manifest>

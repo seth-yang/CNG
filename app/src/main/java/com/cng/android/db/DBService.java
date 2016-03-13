@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.cng.android.data.EnvData;
-import com.cng.android.data.Event;
 import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.util.DataUtil;
@@ -52,70 +51,6 @@ public class DBService {
             db.close ();
         }
     }
-
-/*
-    public static String getSavedBTMac () {
-        Cursor cursor = null;
-        try {
-            String sql =
-                    "SELECT " + DBHelper.VALUE +
-                    "  FROM " + DBHelper.TABLE_NAME +
-                    " WHERE " + DBHelper.NAME + " = '" + SAVED_BT_MAC + "'";
-            cursor = db.rawQuery (sql, null);
-
-            String mac = null;
-            if (cursor.moveToNext ()) {
-                mac = cursor.getString (0);
-            }
-            return mac;
-        } finally {
-            if (cursor != null) cursor.close ();
-        }
-    }
-
-    public static void saveOrUpdateBTMac (String mac) {
-        String saved = getSavedBTMac ();
-        if (saved == null) {
-            insert (SAVED_BT_MAC, mac);
-        } else {
-            update (mac, SAVED_BT_MAC);
-        }
-    }
-
-    public static int getQueueCapacity () {
-        Cursor cursor = query (DBHelper.TABLE_NAME, QUEUE_CAPACITY);
-        if (cursor.moveToNext ()) {
-            return cursor.getInt (0);
-        }
-
-        return -1;
-    }
-
-    private static Cursor query (String table, String name) {
-        return db.query (
-                table,
-                new String[] {DBHelper.VALUE},
-                DBHelper.NAME + "= ?",
-                new String[] {name},
-                null, null, null
-        );
-    }
-
-    private static void insert (String name, String value) {
-        String sql =
-                "INSERT INTO " + DBHelper.TABLE_NAME +
-                " (" + DBHelper.NAME + " , " + DBHelper.VALUE + ") " +
-                "VALUES (?, ?)";
-        db.execSQL (sql, new String[] {name, value});
-    }
-
-    private static void update (String name, String value) {
-        String sql = "UPDATE " + DBHelper.TABLE_NAME +
-                "   SET " + DBHelper.VALUE + " = ? " +
-                " WHERE " + DBHelper.NAME + " = ?";
-        db.execSQL (sql, new String[] {value, name});
-    }
-*/
 
     public static void execute (InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader (new InputStreamReader (in, "utf-8"));
@@ -199,7 +134,7 @@ public class DBService {
             }
         }
 
-        List<Event> events = new ArrayList<> ();
+        List<com.cng.android.data.Event > events = new ArrayList<> ();
         try {
             cursor = db.query (
                     DBSchema.Event.TABLE_NAME,
@@ -358,7 +293,7 @@ public class DBService {
         }
     }
 
-    public static class Card {
+    public static final class Card {
         public static boolean isCardValid (int code) {
             Cursor cursor = null;
             try {
@@ -389,6 +324,49 @@ public class DBService {
             } finally {
                 db.endTransaction ();
             }
+        }
+    }
+
+    public static final class Event {
+        public static void save (com.cng.android.data.Event event) {
+            db.execSQL (
+                    DBSchema.Event.SQL_INSERT,
+                    new Object[] {event.timestamp, event.type.name (), event.data}
+            );
+        }
+    }
+
+    public static final class IRCode {
+        public static List<com.cng.android.data.IRCode> getIrCodes () {
+            Cursor cursor = null;
+            try {
+                cursor = db.query (DBSchema.IR_Code.TABLE_NAME, DBSchema.IR_Code.ALL_COLUMNS, null, null, null, null, DBSchema.IR_Code.CHINESE);
+                List<com.cng.android.data.IRCode> list = new ArrayList<> ();
+                while (cursor.moveToNext ())
+                    list.add (buildIrCode (cursor));
+                return list;
+            } finally {
+                if (cursor != null)
+                    cursor.close ();
+            }
+        }
+
+        public static void update (String name, int code) {
+            db.execSQL (DBSchema.IR_Code.SQL_UPDATE, new Object[] {code, name});
+        }
+
+        private static com.cng.android.data.IRCode buildIrCode (Cursor cursor) {
+            com.cng.android.data.IRCode code = new com.cng.android.data.IRCode ();
+            code.name    = cursor.getString (0);
+            code.chinese = cursor.getString (1);
+            String temp  = cursor.getString (2);
+            if (temp != null && temp.trim ().length () > 0) try {
+                code.code = Integer.parseInt (temp);
+            } catch (Exception ex) {
+                // ignore
+            }
+
+            return code;
         }
     }
 
@@ -425,8 +403,8 @@ public class DBService {
         return data;
     }
 
-    private static Event buildEvent (Cursor cursor) {
-        Event event = new Event ();
+    private static com.cng.android.data.Event buildEvent (Cursor cursor) {
+        com.cng.android.data.Event event = new com.cng.android.data.Event ();
         event.timestamp = cursor.getLong (0);
         String type_name = cursor.getString (1);
         event.type = EventType.valueOf (type_name);

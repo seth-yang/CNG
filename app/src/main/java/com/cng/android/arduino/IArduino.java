@@ -5,4 +5,5 @@ package com.cng.android.arduino;
  */
 public interface IArduino {
     void write (byte[] data);
+    void setArduinoListener (IArduinoListener listener);
 }

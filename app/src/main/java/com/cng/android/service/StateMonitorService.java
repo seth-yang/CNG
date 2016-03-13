@@ -18,10 +18,12 @@ import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
 import com.cng.android.arduino.IArduino;
+import com.cng.android.arduino.IArduinoListener;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
-import com.cng.android.data.ArduinoCommand;
+import com.cng.android.arduino.ArduinoCommand;
 import com.cng.android.data.CardRecord;
+import com.cng.android.data.Event;
 import com.cng.android.data.EventType;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
@@ -67,6 +69,9 @@ public class StateMonitorService extends IntentService
     private boolean connected;
     private String savedMac;
     private EnvData data;
+    private int helloInterval, gatherInterval;
+
+    private IArduinoListener listener;
 
     public StateMonitorService () {
         super ("StateMonitorService");
@@ -126,6 +131,11 @@ public class StateMonitorService extends IntentService
 
             running = true;
         }
+
+        if (D)
+            Log.d (TAG, "fetch the intervals from db.");
+        helloInterval  = DBService.SetupItem.getIntValue (Keys.DataNames.HELLO_INTERVAL, 10);
+        gatherInterval = DBService.SetupItem.getIntValue (Keys.DataNames.GATHER_INTERVAL, 1);
 
         if (D)
             Log.d (TAG, "first time in the service, discovery it");
@@ -198,6 +208,18 @@ public class StateMonitorService extends IntentService
         }
     }
 
+    @Override
+    public void write (byte[] data) {
+        if (writer != null) {
+            writer.write (data);
+        }
+    }
+
+    @Override
+    public void setArduinoListener (IArduinoListener listener) {
+        this.listener = listener;
+    }
+
     EnvData getData () {
         return data;
     }
@@ -259,35 +281,36 @@ public class StateMonitorService extends IntentService
 
                 InputStream in = socket.getInputStream ();
                 writer = new BluetoothWriter ("BTHeartbeat", socket.getOutputStream ());
-
                 saver = new DataSaver ();
 
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
                 CNG.runInNonUIThread (writer);
                 Gson g = new GsonBuilder ().registerTypeAdapter (EventType.class, new EventTypeTranslator ()).create ();
-                Intent intent = new Intent (Keys.Actions.ON_RECEIVE_IR_COMMAND);
+
+/*
+                // 下发心跳周期
+                Thread.sleep (3000);
+                byte[] hello = ArduinoCommand.set (ArduinoCommand.TYPE_HELLO_TIMEOUT, helloInterval);
+                write (hello);
+                Thread.sleep (3000);
+                byte[] gather = ArduinoCommand.set (ArduinoCommand.TYPE_DATA_TIMEOUT, gatherInterval);
+                write (gather);
+*/
+
+                // proceed the writer
+                writer.proceed ();
+
+                // ready to receive data from arduino.
+                if (D)
+                    Log.d (TAG, "ready to receive data from arduino");
                 while (socket.isConnected ()) {
                     String line = reader.readLine ();
                     if (D)
                         Log.d (TAG, "Got a message: " + line);
                     try {
                         ExchangeData trans = g.fromJson (line.trim (), ExchangeData.class);
-                        if (D)
-                            System.out.println (trans);
-                        if (trans.ir != null) {
-                            intent.putExtra (Keys.IR_COMMAND, trans.ir);
-                            sendBroadcast (intent);
-                        }
                         if (trans.event != null) {
-                            if (trans.event.type == EventType.CardAccessed) {
-                                CardRecord record = CardRecord.parse (trans.event.data);
-                                if (authenticate (record)) {
-                                    // 卡认证通过，通知 arduino 开门
-                                    if (D)
-                                        Log.d (Keys.TAG_ARDUINO, "authenticate card success, open the door");
-                                    write (ArduinoCommand.CMD_OPEN_DOOR);
-                                }
-                            }
+                            processEvent (trans.event);
                         }
                         saver.write (trans);
                         synchronized (locker) {
@@ -301,32 +324,40 @@ public class StateMonitorService extends IntentService
             }
         } catch (IOException ex) {
             Log.w (TAG, ex.getMessage (), ex);
+/*
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+*/
         } finally {
-            synchronized (this) {
-                if (D)
-                    Log.d (TAG, "set the flag::connected to false");
-                connected = false;
-            }
+            cleanUp ();
+        }
+    }
 
-            if (socket != null) try {
-                if (D)
-                    Log.d (TAG, "close the socket.");
-                socket.close ();
-            } catch (IOException ex) {
-                Log.w (TAG, ex.getMessage (), ex);
-            }
+    private void cleanUp () {
+        synchronized (this) {
+            if (D)
+                Log.d (TAG, "set the flag::connected to false");
+            connected = false;
+        }
 
-            if (writer != null) {
-                BluetoothWriter temp = this.writer;
-                this.writer = null;
-                temp.shutdown ();
-            }
+        if (socket != null) try {
+            if (D)
+                Log.d (TAG, "close the socket.");
+            socket.close ();
+        } catch (IOException ex) {
+            Log.w (TAG, ex.getMessage (), ex);
+        }
 
-            if (saver != null) {
-                DataSaver temp = saver;
-                this.saver = null;
-                temp.cancel (true);
-            }
+        if (writer != null) {
+            BluetoothWriter temp = this.writer;
+            this.writer = null;
+            temp.shutdown ();
+        }
+
+        if (saver != null) {
+            DataSaver temp = saver;
+            this.saver = null;
+            temp.cancel (true);
         }
     }
 
@@ -386,10 +417,24 @@ public class StateMonitorService extends IntentService
         return card.admin || DBService.Card.isCardValid (card.cardNo) && card.expire.getTime () >= System.currentTimeMillis ();
     }
 
-    @Override
-    public void write (byte[] data) {
-        if (writer != null) {
-            writer.write (data);
+    private void processEvent (Event event) {
+        switch (event.type) {
+            case CardAccessed :
+                CardRecord record = CardRecord.parse (event.data);
+                if (authenticate (record)) {
+                    // 卡认证通过，通知 arduino 开门
+                    if (D)
+                        Log.d (Keys.TAG_ARDUINO, "authenticate card success, open the door");
+                    write (ArduinoCommand.CMD_OPEN_DOOR);
+                } else {
+                    write (ArduinoCommand.CMD_ERROR_BEEP);
+                }
+                break;
+            default :
+                if (listener != null) {
+                    listener.onEventRaised (event);
+                }
+                break;
         }
     }
 }

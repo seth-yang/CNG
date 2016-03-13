@@ -12,20 +12,26 @@ import android.widget.TextView;
 
 import com.cng.android.R;
 import com.cng.android.arduino.IArduino;
-import com.cng.android.data.ArduinoCommand;
+import com.cng.android.arduino.ArduinoCommand;
+import com.cng.android.arduino.IArduinoListener;
+import com.cng.android.data.EnvData;
+import com.cng.android.data.Event;
 import com.cng.android.service.BluetoothDataProvider;
 import com.cng.android.service.StateMonitorService;
+
+import java.io.Serializable;
 
 import static com.cng.android.CNG.D;
 
 /**
  * Created by game on 2016/3/4
  */
-public class ControlPanel2 extends BaseActivity {
+public class ControlPanel2 extends BaseActivity implements IArduinoListener {
     private static final String TAG = "ControlPanel";
 
     private static final int WAITING_FOR_SERVICE_BOUND = 0;
     private static final int CACHE_UI                  = 1;
+    private static final int TURN_COMPOUND_BUTTON      = 2;
 
     private boolean bound = false;
 
@@ -56,6 +62,10 @@ public class ControlPanel2 extends BaseActivity {
     @Override
     protected void onPause () {
         if (bound) {
+            // remove the arduino listener
+            if (arduino != null)
+                arduino.setArduinoListener (null);
+
             getApplicationContext ().unbindService (provider);
             bound = false;
             if (D) {
@@ -71,13 +81,12 @@ public class ControlPanel2 extends BaseActivity {
         switch (v.getId ()) {
             case R.id.fan :
                 cb = cachedButtons.get (R.id.fan);
-                cb.turn (!cb.state);
-                arduino.write (ArduinoCommand.CMD_OPEN_FAN);
+                arduino.write (cb.state ? ArduinoCommand.CMD_CLOSE_FAN : ArduinoCommand.CMD_OPEN_FAN);
                 break;
             case R.id.remote :
-                cb = cachedButtons.get (R.id.remote);
-                cb.turn (!cb.state);
-                arduino.write (ArduinoCommand.CMD_CLOSE_FAN);
+                Intent intent = new Intent (this, IRControlPanelActivity.class);
+                startActivity (intent);
+                finish ();
                 break;
             case R.id.ir :
                 break;
@@ -104,6 +113,19 @@ public class ControlPanel2 extends BaseActivity {
 
     @Override
     public void handleMessage (Message message) {
+        switch (message.what) {
+            case TURN_COMPOUND_BUTTON : {
+                Bundle bundle = message.getData ();
+                int id = bundle.getInt ("id", -1);
+                int code = bundle.getInt ("data", -1);
+                if (id != -1) {
+                    CompoundButton button = cachedButtons.get (id);
+                    if (button != null) {
+                        button.turn (code == 'U' || code == 'C');
+                    }
+                }
+            }
+        }
         super.handleMessage (message);
     }
 
@@ -121,6 +143,7 @@ public class ControlPanel2 extends BaseActivity {
         bound = true;
 
         arduino = provider.getBinder ().getArduino ();
+        arduino.setArduinoListener (this);
         if (D)
             Log.d (TAG, "fetch arduino as: " + arduino);
     }
@@ -158,7 +181,44 @@ public class ControlPanel2 extends BaseActivity {
         other.setOnClickListener (this);
     }
 
-    private static final class CompoundButton {
+    @Override
+    public void onDataReceived (EnvData data) {
+
+    }
+
+    @Override
+    public void onEventRaised (Event event) {
+        int id = -1;
+        switch (event.type) {
+            case Fan:
+                id = R.id.fan;
+                break;
+            case Door :
+                id = R.id.door;
+                break;
+            case IR:
+                id = R.id.ir;
+                break;
+            default:
+        }
+
+        if (id != -1) {
+            Message message = new Message ();
+            message.what = TURN_COMPOUND_BUTTON;
+            Bundle bundle = new Bundle (2);
+            bundle.putInt ("id", id);
+            bundle.putInt ("data", event.data.charAt (0));
+            message.setData (bundle);
+            handler.sendMessage (message);
+        }
+    }
+
+    @Override
+    public void onIRCodeReceived () {
+
+    }
+
+    private static final class CompoundButton implements Serializable {
         TextView on, off;
         ImageButton button;
         boolean state;

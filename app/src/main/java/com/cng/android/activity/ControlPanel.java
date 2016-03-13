@@ -12,7 +12,7 @@ import android.widget.GridView;
 import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.adapter.ControlGridAdapter;
-import com.cng.android.data.ArduinoCommand;
+import com.cng.android.arduino.ArduinoCommand;
 import com.cng.android.data.ControlPanelItem;
 import com.cng.android.util.HandlerDelegate;
 import com.cng.android.util.IMessageHandler;

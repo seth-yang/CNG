@@ -92,6 +92,7 @@
     <string name="label_off">OFF</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
+    <string name="prompt_push_again">请再按一次遥控器</string>
 
     <string name="label_device_address">蓝牙设备地址</string>
     <string name="label_app_uuid">设备号</string>
@@ -109,6 +110,8 @@
     <string name="btn_control_panel">控制面板</string>
     <string name="btn_check_upload">检查更新</string>
     <string name="btn_system_config">系统设置</string>
+    <string name="btn_learn">学习</string>
+    <string name="btn_action">执行</string>
 
     <string name="no_network">没有可用的网络</string>
     <string name="setup_network_prompt">是否对网络进行设置?</string>
@@ -118,4 +121,5 @@
     <string name="err_register_fail">无法在云服务器上注册设备</string>
     <string name="err_init_db_fail">初始化数据库失败</string>
     <string name="err_internal">未知错误</string>
+    <string name="title_activity_ircontrol_panel">IRControlPanelActivity</string>
 </resources>

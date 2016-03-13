@@ -79,6 +79,7 @@ public interface DBSchema {
                 CODE + " INTEGER)";
         String SQL_INSERT = "INSERT INTO " + TABLE_NAME + " (" +
                 NAME + ", " + CHINESE + ", " + CODE + ") VALUES (?, ?, ?)";
+        String SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " + CODE + " = ? WHERE " + NAME + " = ?";
     }
 
     interface Card {
