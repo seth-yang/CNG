@@ -12,7 +12,7 @@ public enum EventType {
     TARGET_DOOR          = 'D',
 */
 
-    Fan ('F'), IR ('I'), Remote ('R'), Lock ('K'), Door ('D'), CardAccessed ('C');
+    Fan ('F'), IR ('I'), Remote ('R'), Lock ('K'), Door ('D'), CardAccessed ('C'), Mode ('M');
 
     public int code;
 

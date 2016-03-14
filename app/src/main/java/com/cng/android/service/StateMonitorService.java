@@ -308,11 +308,18 @@ public class StateMonitorService extends IntentService
                     if (D)
                         Log.d (TAG, "Got a message: " + line);
                     try {
+
                         ExchangeData trans = g.fromJson (line.trim (), ExchangeData.class);
+                        saver.write (trans);
+
                         if (trans.event != null) {
                             processEvent (trans.event);
                         }
-                        saver.write (trans);
+
+                        if (trans.ir != null && this.listener != null) {
+                            listener.onIRCodeReceived (trans.ir.code);
+                        }
+
                         synchronized (locker) {
                             data = trans.data;
                         }

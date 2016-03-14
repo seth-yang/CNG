@@ -214,7 +214,7 @@ public class ControlPanel2 extends BaseActivity implements IArduinoListener {
     }
 
     @Override
-    public void onIRCodeReceived () {
+    public void onIRCodeReceived (long code) {
 
     }
 

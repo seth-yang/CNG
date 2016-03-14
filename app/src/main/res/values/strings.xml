@@ -87,12 +87,15 @@
     <string name="title_start_service">正在启动后台服务…</string>
     <string name="title_error">错误</string>
     <string name="title_activity_dashboard">仪表盘</string>
+    <string name="msg_press_ir_control">请对准接收器按下遥控器按钮</string>
+    <string name="msg_press_ir_again">请再按一次遥控器</string>
+    <string name="msg_preparing">正在准备，请稍候…</string>
 
     <string name="label_on">ON</string>
     <string name="label_off">OFF</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
-    <string name="prompt_push_again">请再按一次遥控器</string>
+
 
     <string name="label_device_address">蓝牙设备地址</string>
     <string name="label_app_uuid">设备号</string>
@@ -121,5 +124,6 @@
     <string name="err_register_fail">无法在云服务器上注册设备</string>
     <string name="err_init_db_fail">初始化数据库失败</string>
     <string name="err_internal">未知错误</string>
+    <string name="err_ir_code_mismatch">这次按键和上次按键不匹配，请从新开始</string>
     <string name="title_activity_ircontrol_panel">IRControlPanelActivity</string>
 </resources>

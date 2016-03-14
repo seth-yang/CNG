@@ -9,5 +9,5 @@ import com.cng.android.data.Event;
 public interface IArduinoListener {
     void onDataReceived (EnvData data);
     void onEventRaised (Event event);
-    void onIRCodeReceived ();
+    void onIRCodeReceived (long code);
 }
