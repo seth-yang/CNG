@@ -23,6 +23,7 @@ import com.cng.android.concurrent.NonUIHandler;
 import com.cng.android.concurrent.NonUIHandlerDelegate;
 import com.cng.android.data.EnvData;
 import com.cng.android.data.Event;
+import com.cng.android.db.DBService;
 import com.cng.android.service.BluetoothDataProvider;
 import com.cng.android.service.StateMonitorService;
 import com.cng.android.ui.CartoonView;
@@ -46,6 +47,7 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
     private int match_times = 0;
     private boolean visible = true;
     private boolean bound = false;
+    private String ir_name;
     private IArduino arduino;
     private BluetoothDataProvider provider = new BluetoothDataProvider ();
 
@@ -66,12 +68,6 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
     @Override
     public void onResume () {
         super.onResume ();
-        if (visible) {
-            root.setVisibility (View.VISIBLE);
-        } else {
-            root.setVisibility (View.GONE);
-        }
-
         if (!bound) {
             Activity activity = getActivity ();
             Intent intent = new Intent (activity, StateMonitorService.class);
@@ -110,6 +106,20 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
         if (root != null) {
             root.setVisibility (View.GONE);
         }
+        this.ir_name = null;
+        arduino.write (ArduinoCommand.CMD_IR_SILENT);
+    }
+
+    public boolean isShown () {
+        return visible;
+    }
+
+    public String getIrName () {
+        return ir_name;
+    }
+
+    public void setIrName (String ir_name) {
+        this.ir_name = ir_name;
     }
 
     @Override
@@ -152,7 +162,7 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
             setText (getActivity ().getString (R.string.msg_press_ir_again));
 
             if (match_times >= 3) {
-                arduino.write (ArduinoCommand.CMD_IR_SILENT);
+                DBService.IRCode.update (ir_name, (int) code);
                 hide ();
             }
         } else {

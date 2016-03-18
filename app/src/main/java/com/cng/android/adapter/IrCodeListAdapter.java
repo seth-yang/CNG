@@ -1,6 +1,10 @@
 package com.cng.android.adapter;
 
 import android.content.Context;
+import android.graphics.Paint;
+import android.text.Html;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +19,12 @@ import java.util.List;
 /**
  * Created by game on 2016/3/14
  */
-public class IrCodeListAdapter extends BaseAdapter {
+public class IrCodeListAdapter extends BaseAdapter implements View.OnClickListener {
     private List<IRCode> list;
     private Context context;
+    private SparseArray<View> managedViews = new SparseArray<> ();
+
+    private View.OnClickListener listener = null;
 
     public IrCodeListAdapter (Context context) {
         this.context = context;
@@ -40,24 +47,34 @@ public class IrCodeListAdapter extends BaseAdapter {
 
     @Override
     public View getView (int position, View convertView, ViewGroup parent) {
+        View view = managedViews.get (position);
         Holder holder;
-        if (convertView == null) {
+        if (view == null) {
             convertView = LayoutInflater.from (context).inflate (R.layout.ir_code_list_item, null);
             holder = new Holder ();
             holder.title = (TextView) convertView.findViewById (R.id.title);
-            holder.button = (TextView) convertView.findViewById (R.id.button);
+            holder.button = (TextView) convertView.findViewById (R.id.btnLearn);
+            holder.btnExecute = (TextView) convertView.findViewById (R.id.btnExecute);
+            holder.button.setOnClickListener (this);
+            holder.btnExecute.setOnClickListener (this);
+            holder.button.setTag (position);
+            holder.btnExecute.setTag (position);
             convertView.setTag (holder);
+            managedViews.put (position, convertView);
         } else {
+            convertView = view;
             holder = (Holder) convertView.getTag ();
         }
 
         IRCode code = getItem (position);
         holder.title.setText (code.chinese);
-        if (code.code == null)
+        if (code.code == null) {
             holder.button.setText (R.string.btn_learn);
-        else
-            holder.button.setText (R.string.btn_action);
-
+            holder.btnExecute.setText ("");
+        } else {
+            holder.button.setText (R.string.btn_re_learn);
+            holder.btnExecute.setText (R.string.btn_action);
+        }
         return convertView;
     }
 
@@ -65,7 +82,18 @@ public class IrCodeListAdapter extends BaseAdapter {
         this.list = data;
     }
 
+    public void setOnClickListener (View.OnClickListener listener) {
+        this.listener = listener;
+    }
+
+    @Override
+    public void onClick (View v) {
+        if (this.listener != null)
+            listener.onClick (v);
+    }
+
     private static class Holder {
-        TextView title, button;
+        TextView title, button, btnExecute;
+        int position;
     }
 }

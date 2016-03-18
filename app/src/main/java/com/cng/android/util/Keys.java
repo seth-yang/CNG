@@ -7,6 +7,8 @@ public interface Keys {
     String IR_COMMAND                         = "com.cng.android.keys.IR_COMMAND";
     String ACTION_NETWORK_STATE_CHANGED       = "com.cng.android.actions.NETWORK_STATE_CHANGED";
     String FILTER_NETWORK_STATE_CHANGED       = "com.cng.android.filters.NETWORK_STATE_CHANGED";
+    
+    String KEY_IR_CODE_NAME                   = "com.cng.android.keys.KEY_IR_CODE_NAME";
 
     String TAG_ARDUINO                        = "arduino";
 

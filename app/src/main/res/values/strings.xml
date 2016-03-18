@@ -95,7 +95,7 @@
     <string name="label_off">OFF</string>
 
     <string name="prompt_device_not_found">没有可用的蓝牙设备</string>
-
+    <string name="prompt_relearn">您确定要重新学习吗？\r\n这将清除您上次保存的红外编码</string>
 
     <string name="label_device_address">蓝牙设备地址</string>
     <string name="label_app_uuid">设备号</string>
@@ -115,6 +115,7 @@
     <string name="btn_system_config">系统设置</string>
     <string name="btn_learn">学习</string>
     <string name="btn_action">执行</string>
+    <string name="btn_re_learn">重新学习</string>
 
     <string name="no_network">没有可用的网络</string>
     <string name="setup_network_prompt">是否对网络进行设置?</string>

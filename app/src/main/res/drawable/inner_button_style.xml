@@ -34,7 +34,7 @@
   
     <item> 
         <shape>
-            <solid android:color="#f6a407" />
+            <solid android:color="@android:color/transparent" />
             <stroke 
                 android:width="1dip" 
                 android:color="#d58700" />

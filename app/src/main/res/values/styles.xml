@@ -102,4 +102,10 @@
         <item name="android:padding">25sp</item>
         <item name="android:layout_gravity">center</item>
     </style>
+    <style name="list_item_button" parent="form_label">
+        <item name="android:layout_marginStart">20sp</item>
+    </style>
+    <style name="dialog_message" parent="form_label">
+        <item name="android:textSize">24sp</item>
+    </style>
 </resources>

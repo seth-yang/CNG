@@ -10,18 +10,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/listView"/>
-<!--
     <fragment
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:name="com.cng.android.fragment.LearnIRCodeFragment"
         android:id="@+id/learn_ir_code"
         tools:layout="@layout/ir_learn_dialog"/>
--->
+<!--
     <LinearLayout android:id="@+id/place_holder"
                   android:orientation="vertical"
                   android:clickable="true"
                   android:visibility="gone"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent" />
+-->
 </merge>

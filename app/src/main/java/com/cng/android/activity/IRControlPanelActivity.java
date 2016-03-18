@@ -3,7 +3,6 @@ package com.cng.android.activity;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.cng.android.R;
@@ -11,8 +10,9 @@ import com.cng.android.adapter.IrCodeListAdapter;
 import com.cng.android.data.IRCode;
 import com.cng.android.db.DBService;
 import com.cng.android.fragment.LearnIRCodeFragment;
+import com.cng.android.ui.PromptDialog;
 
-public class IRControlPanelActivity extends BaseActivity implements ListView.OnItemClickListener {
+public class IRControlPanelActivity extends BaseActivity implements PromptDialog.IPromptDialogListener {
     private IrCodeListAdapter adapter;
     private LearnIRCodeFragment learning;
     private View placeHolder;
@@ -28,11 +28,9 @@ public class IRControlPanelActivity extends BaseActivity implements ListView.OnI
         adapter = new IrCodeListAdapter (this);
         ListView listView = ((ListView) findViewById (R.id.listView));
         listView.setAdapter (adapter);
-        listView.setOnItemClickListener (this);
+        adapter.setOnClickListener (this);
 
-        placeHolder = findViewById (R.id.place_holder);
-
-//        learning = (LearnIRCodeFragment) getFragmentManager ().findFragmentById (R.id.learn_ir_code);
+        learning = (LearnIRCodeFragment) getFragmentManager ().findFragmentById (R.id.learn_ir_code);
 
         nonUIHandler.sendMessage (LOAD_DATA);
     }
@@ -67,22 +65,50 @@ public class IRControlPanelActivity extends BaseActivity implements ListView.OnI
     }
 
     @Override
-    public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
-        IRCode ir = adapter.getItem (position);
-        placeHolder.setVisibility (View.VISIBLE);
-        if (ir.code == null) {
-            if (learning == null) {
-                learning = new LearnIRCodeFragment ();
-                getFragmentManager ()
-                        .beginTransaction ()
-                        .replace (R.id.place_holder, learning)
-                        .addToBackStack (null)
-                        .commitAllowingStateLoss ();
-//                learning.setArguments ();
-            }
-//            learning.show ();
-        } else {
+    public void onClick (View view) {
+        Integer tag = (Integer) view.getTag ();
+        if (tag != null) {
+            int position = tag;
+            IRCode ir = adapter.getItem (position);
 
+            if (ir.code == null) {
+                learning.setIrName (ir.name);
+                learning.show ();
+            } else {
+                switch (view.getId ()) {
+                    case R.id.btnExecute :
+                        break;
+                    case R.id.btnLearn :
+                        PromptDialog dialog = new PromptDialog (this);
+                        dialog.setMessage (R.string.prompt_relearn);
+                        dialog.setPromptDialogListener (this);
+                        dialog.show ();
+                        break;
+                }
+            }
+        } else {
+            switch (view.getId ()) {
+                default:
+                    super.onClick (view);
+            }
         }
+    }
+
+    @Override
+    public void onBackPressed () {
+        if (learning.isShown ()) {
+            learning.hide ();
+        } else
+            super.onBackPressed ();
+    }
+
+    @Override
+    public void onConfirm () {
+
+    }
+
+    @Override
+    public void onCancel () {
+
     }
 }
