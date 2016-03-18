@@ -91,6 +91,7 @@ public class ControlPanel2 extends BaseActivity implements IArduinoListener {
             case R.id.ir :
                 break;
             case R.id.door :
+                arduino.write (ArduinoCommand.CMD_OPEN_DOOR);
                 break;
             default :
                 super.onClick (v);
@@ -162,7 +163,9 @@ public class ControlPanel2 extends BaseActivity implements IArduinoListener {
         TextView ir_on  = (TextView) findViewById (R.id.ir_on);
         TextView ir_off = (TextView) findViewById (R.id.ir_off);
         ImageButton ir  = (ImageButton) findViewById (R.id.ir);
-        cachedButtons.put (R.id.ir, new CompoundButton (ir_on, ir_off, ir, this));
+        CompoundButton cb = new CompoundButton (ir_on, ir_off, ir, this);
+        cb.turn (true);
+        cachedButtons.put (R.id.ir, cb);
 
         TextView card_on  = (TextView) findViewById (R.id.card_on);
         TextView card_off = (TextView) findViewById (R.id.card_off);

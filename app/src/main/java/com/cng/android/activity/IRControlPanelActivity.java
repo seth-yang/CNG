@@ -64,13 +64,15 @@ public class IRControlPanelActivity extends BaseActivity implements PromptDialog
         handler.sendEmptyMessage (UPDATE_UI);
     }
 
+    private String irName;
+
     @Override
     public void onClick (View view) {
         Integer tag = (Integer) view.getTag ();
         if (tag != null) {
             int position = tag;
             IRCode ir = adapter.getItem (position);
-
+            irName = ir.name;
             if (ir.code == null) {
                 learning.setIrName (ir.name);
                 learning.show ();
@@ -104,7 +106,8 @@ public class IRControlPanelActivity extends BaseActivity implements PromptDialog
 
     @Override
     public void onConfirm () {
-
+        learning.setIrName (irName);
+        learning.show ();
     }
 
     @Override
