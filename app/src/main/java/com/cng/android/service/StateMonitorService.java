@@ -17,14 +17,17 @@ import android.util.Log;
 import com.cng.android.CNG;
 import com.cng.android.R;
 import com.cng.android.activity.DashboardActivity;
+import com.cng.android.arduino.CommonDeviceState;
 import com.cng.android.arduino.IArduino;
 import com.cng.android.arduino.IArduinoListener;
+import com.cng.android.arduino.IRRemoteMode;
+import com.cng.android.arduino.IRSensorState;
 import com.cng.android.concurrent.BluetoothWriter;
 import com.cng.android.concurrent.DataSaver;
 import com.cng.android.arduino.ArduinoCommand;
 import com.cng.android.data.CardRecord;
 import com.cng.android.data.Event;
-import com.cng.android.data.EventType;
+import com.cng.android.data.EventTarget;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.SetupItem;
 import com.cng.android.data.EnvData;
@@ -69,7 +72,10 @@ public class StateMonitorService extends IntentService
     private boolean connected;
     private String savedMac;
     private EnvData data;
-    private int helloInterval, gatherInterval;
+
+    private CommonDeviceState doorState, fanState, lightState, lockState;
+    private IRRemoteMode irRemoteMode;
+    private IRSensorState irSensorState;
 
     private IArduinoListener listener;
 
@@ -131,11 +137,6 @@ public class StateMonitorService extends IntentService
 
             running = true;
         }
-
-        if (D)
-            Log.d (TAG, "fetch the intervals from db.");
-        helloInterval  = DBService.SetupItem.getIntValue (Keys.DataNames.HELLO_INTERVAL, 10);
-        gatherInterval = DBService.SetupItem.getIntValue (Keys.DataNames.GATHER_INTERVAL, 1);
 
         if (D)
             Log.d (TAG, "first time in the service, discovery it");
@@ -220,6 +221,36 @@ public class StateMonitorService extends IntentService
         this.listener = listener;
     }
 
+    @Override
+    public IRRemoteMode getIrRemoteMode () {
+        return irRemoteMode;
+    }
+
+    @Override
+    public IRSensorState getIrSensorState () {
+        return irSensorState;
+    }
+
+    @Override
+    public CommonDeviceState getDoorState () {
+        return doorState;
+    }
+
+    @Override
+    public CommonDeviceState getLockState () {
+        return lockState;
+    }
+
+    @Override
+    public CommonDeviceState getFanState () {
+        return fanState;
+    }
+
+    @Override
+    public CommonDeviceState getLightState () {
+        return lightState;
+    }
+
     EnvData getData () {
         return data;
     }
@@ -241,7 +272,7 @@ public class StateMonitorService extends IntentService
             } catch (Exception e) {
                 e.printStackTrace ();
             }
-//            socket = device.createRfcommSocketToServiceRecord (SPP_UUID);
+
             try {
                 socket.connect ();
                 discover.cancel ();
@@ -285,7 +316,7 @@ public class StateMonitorService extends IntentService
 
                 BufferedReader reader = new BufferedReader (new InputStreamReader (in));
                 CNG.runInNonUIThread (writer);
-                Gson g = new GsonBuilder ().registerTypeAdapter (EventType.class, new EventTypeTranslator ()).create ();
+                Gson g = new GsonBuilder ().registerTypeAdapter (EventTarget.class, new EventTypeTranslator ()).create ();
 
 /*
                 // 下发心跳周期
@@ -324,17 +355,12 @@ public class StateMonitorService extends IntentService
                             data = trans.data;
                         }
                     } catch (Exception ex) {
-//                        Log.w (TAG, ex.getMessage (), ex);
                         // ignore
                     }
                 }
             }
         } catch (IOException ex) {
             Log.w (TAG, ex.getMessage (), ex);
-/*
-        } catch (InterruptedException e) {
-            e.printStackTrace ();
-*/
         } finally {
             cleanUp ();
         }
@@ -432,15 +458,36 @@ public class StateMonitorService extends IntentService
                     // 卡认证通过，通知 arduino 开门
                     if (D)
                         Log.d (Keys.TAG_ARDUINO, "authenticate card success, open the door");
-                    write (ArduinoCommand.CMD_OPEN_DOOR);
+                    write (ArduinoCommand.CMD_OPEN_LOCK);
                 } else {
                     write (ArduinoCommand.CMD_ERROR_BEEP);
                 }
                 break;
             default :
+                saveStates (event);
                 if (listener != null) {
                     listener.onEventRaised (event);
                 }
+                break;
+        }
+    }
+
+    private void saveStates (Event event) {
+        switch (event.type) {
+            case Lock :
+                this.lockState = CommonDeviceState.parse (event.data.charAt (0));
+                break;
+            case Light:
+                this.lightState = CommonDeviceState.parse (event.data.charAt (0));
+                break;
+            case Door:
+                this.doorState = CommonDeviceState.parse (event.data.charAt (0));
+                break;
+            case Fan:
+                this.fanState = CommonDeviceState.parse (event.data.charAt (0));
+                break;
+            case Mode:
+                this.irRemoteMode = IRRemoteMode.parse (event.data.charAt (0));
                 break;
         }
     }

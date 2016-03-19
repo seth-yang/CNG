@@ -2,7 +2,7 @@ package com.cng.android.concurrent;
 
 import android.util.Log;
 
-import com.cng.android.data.EventType;
+import com.cng.android.data.EventTarget;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.data.Result;
 import com.cng.android.data.SetupItem;
@@ -46,7 +46,7 @@ public class DataSaver extends CancelableThread {
     private String url, hostId;
     private Mode mode = Mode.Ethernet;
     private Gson g = new GsonBuilder ()
-                         .registerTypeAdapter (EventType.class, new EventTypeTranslator ())
+                         .registerTypeAdapter (EventTarget.class, new EventTypeTranslator ())
                          .create ();
     private Type type = new TypeToken<Result<Object>> () {}.getType ();
 

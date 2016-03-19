@@ -13,7 +13,7 @@ public class Event {
 
     @Expose
     @SerializedName ("T")
-    public EventType type;
+    public EventTarget type;
 
     @Expose
     @SerializedName ("D")

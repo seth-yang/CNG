@@ -91,7 +91,7 @@ public class ControlPanel2 extends BaseActivity implements IArduinoListener {
             case R.id.ir :
                 break;
             case R.id.door :
-                arduino.write (ArduinoCommand.CMD_OPEN_DOOR);
+                arduino.write (ArduinoCommand.CMD_OPEN_LOCK);
                 break;
             default :
                 super.onClick (v);

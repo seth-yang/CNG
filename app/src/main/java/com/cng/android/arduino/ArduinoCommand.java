@@ -26,8 +26,9 @@ public class ArduinoCommand {
             TARGET_FAN           = 'F',
             TARGET_IR            = 'I',
             TARGET_REMOTE        = 'R',
-            TARGET_KEY           = 'K',
+            TARGET_LOCK          = 'K',
             TARGET_DOOR          = 'D',
+            TARGET_LIGHT         = 'T',
 
             // IR mode
             IR_MODE_LEARN        = 'L',
@@ -41,8 +42,10 @@ public class ArduinoCommand {
     public static final byte[] CMD_IR_SILENT     = { CMD_SET,       TYPE_IR_MODE, IR_MODE_SILENT, 0, 0, 0 };
     public static final byte[] CMD_OPEN_FAN      = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 1 };
     public static final byte[] CMD_CLOSE_FAN     = { CMD_SEND_DATA, TARGET_FAN,   0, 0, 0, 0 };
-    public static final byte[] CMD_OPEN_DOOR     = { CMD_SEND_DATA, TARGET_DOOR,  0, 0, 0, 1 };
-    public static final byte[] CMD_ERROR_BEEP    = { CMD_SEND_DATA, TARGET_DOOR,  0, 0, 0, 0 };
+    public static final byte[] CMD_OPEN_LIGHT    = { CMD_SEND_DATA, TARGET_LIGHT, 0, 0, 0, 1 };
+    public static final byte[] CMD_CLOSE_LIGHT   = { CMD_SEND_DATA, TARGET_LIGHT, 0, 0, 0, 0 };
+    public static final byte[] CMD_OPEN_LOCK     = { CMD_SEND_DATA, TARGET_LOCK,  0, 0, 0, 1 };
+    public static final byte[] CMD_ERROR_BEEP    = { CMD_SEND_DATA, TARGET_LOCK,  0, 0, 0, 0 };
 
     public static byte[] set (byte type, int value) {
         byte[] command = new byte[6];
@@ -59,6 +62,14 @@ public class ArduinoCommand {
         byte[] command = new byte[6];
         command [0] = CMD_TOGGLE;
         command [1] = target;
+        return command;
+    }
+
+    public static byte[] buildIRCommand (int code) {
+        byte[] command = {CMD_SEND_DATA, TARGET_REMOTE, 0, 0, 0, 0};
+        byte[] value = DataUtil.intToBytes (code);
+        System.arraycopy (value, 0, command, 2, 4);
+        System.out.println (DataUtil.toHex (command));
         return command;
     }
 

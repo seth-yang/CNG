@@ -1,6 +1,6 @@
 package com.cng.android.util.gson;
 
-import com.cng.android.data.EventType;
+import com.cng.android.data.EventTarget;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -13,21 +13,21 @@ import java.lang.reflect.Type;
 /**
  * Created by game on 2016/3/4
  */
-public class EventTypeTranslator implements JsonSerializer<EventType>, JsonDeserializer<EventType> {
+public class EventTypeTranslator implements JsonSerializer<EventTarget>, JsonDeserializer<EventTarget> {
     @Override
-    public EventType deserialize (JsonElement e, Type type, JsonDeserializationContext context) throws JsonParseException {
-        if (type == EventType.class) {
+    public EventTarget deserialize (JsonElement e, Type type, JsonDeserializationContext context) throws JsonParseException {
+        if (type == EventTarget.class) {
             int code = e.getAsCharacter ();
-            return EventType.parse (code);
+            return EventTarget.parse (code);
         }
 
         return context.deserialize (e, type);
     }
 
     @Override
-    public JsonElement serialize (EventType eventType, Type type, JsonSerializationContext context) {
-        return null == eventType ?
+    public JsonElement serialize (EventTarget target, Type type, JsonSerializationContext context) {
+        return null == target ?
                 context.serialize (null) :
-                context.serialize (eventType.code);
+                context.serialize (target.code);
     }
 }

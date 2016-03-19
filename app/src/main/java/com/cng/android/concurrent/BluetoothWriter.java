@@ -5,6 +5,7 @@ import android.util.Log;
 import com.cng.android.CNG;
 import com.cng.android.arduino.ArduinoCommand;
 import com.cng.android.db.DBService;
+import com.cng.android.util.DataUtil;
 import com.cng.android.util.Keys;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ import static com.cng.android.CNG.D;
  * Created by game on 2016/2/22
  */
 public class BluetoothWriter implements Runnable {
-    private static final String TAG = "BluetoothWriter";
+    private static final String TAG = "Arduino";
 
     public static final Object QUIT = new byte[0];
     private static final Object locker = new Object ();
@@ -128,6 +129,7 @@ public class BluetoothWriter implements Runnable {
 */
                     try {
                         out.write (command);
+                        Log.e (TAG, "writing data: " + DataUtil.toHex (command));
                         out.flush ();
                     } catch (IOException ex) {
                         Log.w (TAG, ex.getMessage (), ex);

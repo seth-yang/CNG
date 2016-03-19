@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.cng.android.data.EnvData;
-import com.cng.android.data.EventType;
+import com.cng.android.data.EventTarget;
 import com.cng.android.data.ExchangeData;
 import com.cng.android.util.DataUtil;
 
@@ -407,7 +407,7 @@ public class DBService {
         com.cng.android.data.Event event = new com.cng.android.data.Event ();
         event.timestamp = cursor.getLong (0);
         String type_name = cursor.getString (1);
-        event.type = EventType.valueOf (type_name);
+        event.type = EventTarget.valueOf (type_name);
         event.data = cursor.getString (2);
         return event;
     }

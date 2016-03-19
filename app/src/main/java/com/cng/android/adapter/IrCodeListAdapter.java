@@ -71,6 +71,7 @@ public class IrCodeListAdapter extends BaseAdapter implements View.OnClickListen
         if (code.code == null) {
             holder.button.setText (R.string.btn_learn);
             holder.btnExecute.setText ("");
+            holder.btnExecute.setVisibility (View.GONE);
         } else {
             holder.button.setText (R.string.btn_re_learn);
             holder.btnExecute.setText (R.string.btn_action);

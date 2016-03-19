@@ -6,4 +6,10 @@ package com.cng.android.arduino;
 public interface IArduino {
     void write (byte[] data);
     void setArduinoListener (IArduinoListener listener);
+    IRRemoteMode getIrRemoteMode ();
+    CommonDeviceState getFanState ();
+    IRSensorState getIrSensorState ();
+    CommonDeviceState getDoorState ();
+    CommonDeviceState getLockState ();
+    CommonDeviceState getLightState ();
 }

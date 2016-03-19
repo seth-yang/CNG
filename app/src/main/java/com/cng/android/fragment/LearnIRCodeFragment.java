@@ -51,12 +51,14 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
     private IArduino arduino;
     private BluetoothDataProvider provider = new BluetoothDataProvider ();
 
-    private static final String TAG = "IArduino";
+    private static final String TAG = "Arduino";
     private static final int SET_TEXT                  = 0;
     private static final int WAITING_FOR_SERVICE_BOUND = 1;
 
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if (D)
+            Log.d (TAG, "************************************** IR Code Fragment on create");
         root = inflater.inflate (R.layout.ir_learn_dialog, container, false);
         message = (TextView) root.findViewById (R.id.message);
         handler = new HandlerDelegate (this);
@@ -68,6 +70,8 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
     @Override
     public void onResume () {
         super.onResume ();
+        if (D)
+            Log.d (TAG, "*************************************** IR Code Fragment on resume");
         if (!bound) {
             Activity activity = getActivity ();
             Intent intent = new Intent (activity, StateMonitorService.class);
@@ -91,13 +95,16 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
         }
         match_times = 0;
         code = 0;
+        arduino.write (ArduinoCommand.CMD_IR_SILENT);
         super.onPause ();
     }
 
     public void show () {
-        this.visible = true;
         if (root != null) {
             root.setVisibility (View.VISIBLE);
+            arduino.write (ArduinoCommand.CMD_LEARN_IR_CODE);
+            this.visible = true;
+            Log.e (TAG, "ir_name = " + ir_name);
         }
     }
 
@@ -108,6 +115,8 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
         }
         this.ir_name = null;
         arduino.write (ArduinoCommand.CMD_IR_SILENT);
+        if (D)
+            Log.d (TAG, "The ir_code learn fragment hide.");
     }
 
     public boolean isShown () {
@@ -164,6 +173,7 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
             if (match_times >= 3) {
                 DBService.IRCode.update (ir_name, (int) code);
                 hide ();
+                Log.e (TAG, ir_name + " matches " + match_times + " times, and saved it into db.");
             }
         } else {
             this.code = -1;
@@ -216,7 +226,5 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
         arduino.setArduinoListener (this);
         if (D)
             Log.d (TAG, "fetch arduino as: " + arduino);
-//        setText (R.string.msg_press_ir_control);
-        arduino.write (ArduinoCommand.CMD_LEARN_IR_CODE);
     }
 }
