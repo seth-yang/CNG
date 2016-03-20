@@ -75,7 +75,7 @@ public class StateMonitorService extends IntentService
 
     private CommonDeviceState doorState, fanState, lightState, lockState;
     private IRRemoteMode irRemoteMode;
-    private IRSensorState irSensorState;
+    private IRSensorState irSensorState = IRSensorState.Alarm;
 
     private IArduinoListener listener;
 
@@ -481,13 +481,21 @@ public class StateMonitorService extends IntentService
                 this.lightState = CommonDeviceState.parse (event.data.charAt (0));
                 break;
             case Door:
-                this.doorState = CommonDeviceState.parse (event.data.charAt (0));
+                this.doorState = event.data.charAt (0) == 'C' ? CommonDeviceState.On : CommonDeviceState.Off;
                 break;
             case Fan:
                 this.fanState = CommonDeviceState.parse (event.data.charAt (0));
                 break;
             case Mode:
                 this.irRemoteMode = IRRemoteMode.parse (event.data.charAt (0));
+                break;
+            case IR :
+                if (D)
+                    Log.d (TAG, "receive an ir event.");
+                char ch = event.data.charAt (0);
+                if (ch == 'U' && this.irSensorState == IRSensorState.Alarm && this.doorState == CommonDeviceState.On) {
+                    AlarmService.playAlarmVoice (this, 3);
+                }
                 break;
         }
     }

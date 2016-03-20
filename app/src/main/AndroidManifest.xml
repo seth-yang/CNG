@@ -45,6 +45,7 @@
             android:name=".service.StateMonitorService"
             android:enabled="true">
         </service>
+        <service android:name=".service.AlarmService" android:enabled="true"/>
 
         <receiver
             android:name=".receiver.BootBroadcastReceiver"

@@ -45,7 +45,7 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
 
     private long code;
     private int match_times = 0;
-    private boolean visible = true;
+    private boolean visible = false;
     private boolean bound = false;
     private String ir_name;
     private IArduino arduino;
@@ -95,7 +95,6 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
         }
         match_times = 0;
         code = 0;
-        arduino.write (ArduinoCommand.CMD_IR_SILENT);
         super.onPause ();
     }
 
@@ -109,9 +108,13 @@ public class LearnIRCodeFragment extends Fragment implements IMessageHandler, IN
     }
 
     public void hide () {
+        if (D)
+            Log.d (TAG, "I'm going to hide myself :)");
         this.visible = false;
         if (root != null) {
             root.setVisibility (View.GONE);
+            if (D)
+                Log.d (TAG, "The root set to GONE.");
         }
         this.ir_name = null;
         arduino.write (ArduinoCommand.CMD_IR_SILENT);

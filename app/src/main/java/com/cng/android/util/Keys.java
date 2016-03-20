@@ -7,8 +7,11 @@ public interface Keys {
     String IR_COMMAND                         = "com.cng.android.keys.IR_COMMAND";
     String ACTION_NETWORK_STATE_CHANGED       = "com.cng.android.actions.NETWORK_STATE_CHANGED";
     String FILTER_NETWORK_STATE_CHANGED       = "com.cng.android.filters.NETWORK_STATE_CHANGED";
+
+    String ALARM_VOICE_NAME                   = "voice.pcm";
     
     String KEY_IR_CODE_NAME                   = "com.cng.android.keys.KEY_IR_CODE_NAME";
+    String KEY_PLAY_VOICE_TIMES               = "com.cng.android.keys.PLAY_VOICE_TIMES";
 
     String TAG_ARDUINO                        = "arduino";
 
@@ -17,6 +20,7 @@ public interface Keys {
     interface Actions {
         String SET_ARDUINO                    = "com.cng.android.actions.SET_ARDUINO";
         String ON_RECEIVE_IR_COMMAND          = "com.cng.android.actions.ON_RECEIVE_IR_COMMAND";
+        String PLAY_ALARM_VOICE               = "com.cng.android.actions.PLAY_ALARM_VOICE";
     }
 
     interface DataNames {
